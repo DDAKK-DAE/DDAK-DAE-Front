@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut, ChevronRight, MapPin, Clock, Users } from 'lucide-react';
+import { LogOut, ChevronRight, MapPin, Clock, Users, ClipboardList } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { useProfile } from '../application/useProfile';
 import { cn } from '@/shared/utils/cn';
@@ -135,39 +135,47 @@ export function ProfilePage() {
             </div>
           ) : (
             myChallenges.map((ch) => (
-              <Link
+              <div
                 key={ch.id}
-                href={`/challenges/${ch.id}`}
-                className="block rounded-2xl bg-surface border border-border p-4 hover:border-primary/30 transition-colors active:scale-[0.98] space-y-2.5"
+                className="rounded-2xl bg-surface border border-border p-4 space-y-2.5"
               >
-                <div className="flex items-start gap-2">
-                  <span
-                    className={cn(
-                      'shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                      CATEGORY_COLOR[ch.category] ?? 'text-white bg-white/10',
-                    )}
-                  >
-                    {ch.category}
-                  </span>
-                  <p className="flex-1 font-semibold text-foreground text-sm leading-snug">
-                    {ch.title}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3 text-primary" />
-                    {ch.location_text}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-[#f5a318]" />
-                    {getDeadlineDays(ch.deadline_at)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3 text-[#07d98a]" />
-                    {ch.current_participants}/{ch.max_participants}명
-                  </span>
-                </div>
-              </Link>
+                <Link href={`/challenges/${ch.id}`} className="block space-y-2.5">
+                  <div className="flex items-start gap-2">
+                    <span
+                      className={cn(
+                        'shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                        CATEGORY_COLOR[ch.category] ?? 'text-white bg-white/10',
+                      )}
+                    >
+                      {ch.category}
+                    </span>
+                    <p className="flex-1 font-semibold text-foreground text-sm leading-snug">
+                      {ch.title}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3 text-primary" />
+                      {ch.location_text}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-[#f5a318]" />
+                      {getDeadlineDays(ch.deadline_at)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3 w-3 text-[#07d98a]" />
+                      {ch.current_participants}/{ch.max_participants}명
+                    </span>
+                  </div>
+                </Link>
+                <Link
+                  href={`/challenges/${ch.id}/applicants`}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2 text-xs text-muted hover:border-primary/40 hover:text-primary transition-colors"
+                >
+                  <ClipboardList className="h-3.5 w-3.5" />
+                  신청자 관리
+                </Link>
+              </div>
             ))
           )}
         </section>
