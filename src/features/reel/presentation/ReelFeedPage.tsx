@@ -69,7 +69,7 @@ function ReelItem({
     <div className="relative h-full w-full flex-shrink-0 bg-black" onClick={togglePlay}>
       <video
         ref={videoRef}
-        src={reel.video_url}
+        src={reel.videoUrl}
         loop
         muted={isMuted}
         playsInline
@@ -93,8 +93,8 @@ function ReelItem({
 
       {/* 타입 배지 */}
       <div className="absolute top-4 left-4">
-        <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold text-white', REEL_TYPE_COLOR[reel.type])}>
-          {REEL_TYPE_LABEL[reel.type]}
+        <span className={cn('rounded-full px-2.5 py-1 text-xs font-semibold text-white', REEL_TYPE_COLOR[reel.reelType])}>
+          {REEL_TYPE_LABEL[reel.reelType]}
         </span>
       </div>
 
@@ -115,7 +115,7 @@ function ReelItem({
           <div className="flex -space-x-2">
             {reel.participants.slice(0, 3).map((p) => (
               <div
-                key={p.id}
+                key={p.userId}
                 className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-primary/30 text-xs font-bold text-white"
               >
                 {p.nickname.slice(0, 1)}
@@ -126,7 +126,7 @@ function ReelItem({
             <p className="text-sm font-semibold text-white">
               {reel.participants.map((p) => p.nickname).join(', ')}
             </p>
-            <p className="text-xs text-white/60">{formatRelativeTime(reel.created_at)}</p>
+            <p className="text-xs text-white/60">{formatRelativeTime(reel.createdAt)}</p>
           </div>
         </div>
       </div>

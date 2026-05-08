@@ -1,14 +1,8 @@
-// src/api/endpoints/challenges.ts
-// Challenges API 엔드포인트 — api_spec.md Challenges 섹션 기준
 import { apiClient } from '../client';
 import type { ApiResponse } from '@/shared/types/api';
-import type { PaginationParams } from '@/shared/types/pagination';
-import type { Challenge, ChallengeDetail } from '@/features/challenge/domain/entities/Challenge';
-import type { Crew } from '@/features/crew/domain/entities/Crew';
-
-// ==========================================
-// Request 타입 정의
-// ==========================================
+import type { PaginationParams, Page } from '@/shared/types/pagination';
+import type { Challenge } from '@/features/challenge/domain/entities/Challenge';
+import type { CloseCrewResponse } from '@/features/crew/domain/entities/Crew';
 
 export interface GetChallengesParams extends PaginationParams {
   category?: string;
@@ -18,54 +12,62 @@ export interface GetChallengesParams extends PaginationParams {
 export interface CreateChallengeRequest {
   title: string;
   description?: string;
-  location_text: string;
+  locationText: string;
   category: string;
-  max_participants: number; // 2~6
-  deadline_at: string; // ISO datetime
-  audio_url?: string;
+  maxParticipants: number;
+  deadlineAt: string;
+  audioUrl?: string;
   hashtags?: string[];
 }
 
 export type UpdateChallengeRequest = Partial<CreateChallengeRequest>;
 
-// ==========================================
-// API 함수
-// ==========================================
-
-/** GET /challenges — 챌린지 피드 목록 조회 (AI 개인화 정렬) */
-export async function getChallengesApi(params?: GetChallengesParams): Promise<Challenge[]> {
-  const response = await apiClient.get<ApiResponse<Challenge[]>>('/challenges', { params });
-  return response.data.data;
+/** GET /challenges — 피드 목록 (Spring Pageable) */
+export async function getChallengesApi(params?: GetChallengesParams): Promise<Page<Challenge>> {
+  const response = await apiClient.get<ApiResponse<Page<Challenge>>>('/challenges', { params });
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }
 
-/** GET /challenges/:id — 챌린지 상세 조회 */
-export async function getChallengeByIdApi(id: string): Promise<ChallengeDetail> {
-  const response = await apiClient.get<ApiResponse<ChallengeDetail>>(`/challenges/${id}`);
-  return response.data.data;
+/** GET /challenges/:id */
+export async function getChallengeByIdApi(id: string): Promise<Challenge> {
+  const response = await apiClient.get<ApiResponse<Challenge>>(`/challenges/${id}`);
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }
 
-/** POST /challenges — 챌린지 개설 */
+/** POST /challenges */
 export async function createChallengeApi(request: CreateChallengeRequest): Promise<Challenge> {
   const response = await apiClient.post<ApiResponse<Challenge>>('/challenges', request);
-  return response.data.data;
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }
 
-/** PATCH /challenges/:id — 챌린지 수정 (주최자만) */
+/** PATCH /challenges/:id */
 export async function updateChallengeApi(
   id: string,
   request: UpdateChallengeRequest,
 ): Promise<Challenge> {
   const response = await apiClient.patch<ApiResponse<Challenge>>(`/challenges/${id}`, request);
-  return response.data.data;
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }
 
-/** DELETE /challenges/:id — 챌린지 삭제 (주최자만, status='open') */
+/** DELETE /challenges/:id */
 export async function deleteChallengeApi(id: string): Promise<void> {
   await apiClient.delete(`/challenges/${id}`);
 }
 
-/** POST /challenges/:id/close — 모집 마감 (주최자만) → 크루 자동 생성 */
-export async function closeChallengeApi(id: string): Promise<Crew> {
-  const response = await apiClient.post<ApiResponse<Crew>>(`/challenges/${id}/close`);
-  return response.data.data;
+/** POST /challenges/:id/close — 모집 마감 + 크루 자동 생성 */
+export async function closeChallengeApi(id: string): Promise<CloseCrewResponse> {
+  const response = await apiClient.post<ApiResponse<CloseCrewResponse>>(
+    `/challenges/${id}/close`,
+  );
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }

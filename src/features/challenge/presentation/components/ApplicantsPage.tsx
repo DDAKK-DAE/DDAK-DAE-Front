@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, CheckCircle2, XCircle, Clock, Star } from 'lucide-react';
+import { ArrowLeft, Users, CheckCircle2, XCircle, Clock, Sparkles, Lock } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { Button } from '@/shared/components/ui/Button';
+import { Modal } from '@/shared/components/ui/Modal';
 import { useApplicants } from '../../application/hooks/useApplicants';
 import { PARTICIPATION_STATUS } from '../../domain/entities/Challenge';
 import type { ApplicantDetail, ParticipationStatus } from '../../domain/entities/Challenge';
@@ -18,101 +19,80 @@ const STATUS_LABEL: Record<ParticipationStatus, string> = {
   rejected: '거절됨',
 };
 
-const CATEGORY_CHIP: Record<string, string> = {
-  댄스: 'bg-[#e8356e]/10 text-[#e8356e]',
-  일상: 'bg-[#f5a318]/10 text-[#f5a318]',
-  스포츠: 'bg-[#07d98a]/10 text-[#07d98a]',
-  푸드: 'bg-[#f5a318]/10 text-[#f5a318]',
-  기타: 'bg-purple-500/10 text-purple-300',
-};
-
 function ApplicantCard({
   applicant,
   actionLoading,
+  chemistryLoading,
   onAccept,
   onReject,
+  onAnalyze,
 }: {
   applicant: ApplicantDetail;
   actionLoading: string | null;
+  chemistryLoading: string | null;
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
+  onAnalyze: (userId: string) => void;
 }) {
-  const { participation_id, user, intro_message, status, participation_history } = applicant;
-  const isActing = actionLoading === participation_id;
+  const { participationId, user, introMessage, status } = applicant;
+  const isActing = actionLoading === participationId;
+  const isAnalyzing = chemistryLoading === user.id;
 
   return (
     <div className="rounded-2xl bg-surface border border-border p-4 space-y-3">
-      {/* 유저 정보 */}
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-base">
           {user.nickname.slice(0, 1)}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="font-semibold text-foreground text-sm truncate">{user.nickname}</p>
-            {user.job && (
-              <span className="shrink-0 text-xs text-muted">· {user.job}</span>
-            )}
-          </div>
-          {/* 참여 이력 */}
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <Star className="h-3 w-3 text-[#f5a318]" />
-            <span className="text-xs text-muted">
-              챌린지 {participation_history.total_count}회 참여
-            </span>
-            <div className="flex gap-1 ml-1">
-              {participation_history.categories.slice(0, 3).map((cat) => (
-                <span
-                  key={cat}
-                  className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-medium', CATEGORY_CHIP[cat] ?? 'bg-white/10 text-white/60')}
-                >
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
+          <p className="font-semibold text-foreground text-sm truncate">{user.nickname}</p>
+          {user.job && <p className="text-xs text-muted mt-0.5">{user.job}</p>}
         </div>
 
-        {/* 상태 배지 */}
         {status !== PARTICIPATION_STATUS.PENDING && (
-          <div className={cn(
-            'shrink-0 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium',
-            status === PARTICIPATION_STATUS.ACCEPTED
-              ? 'bg-primary/10 text-primary'
-              : 'bg-red-500/10 text-red-400',
-          )}>
-            {status === PARTICIPATION_STATUS.ACCEPTED
-              ? <CheckCircle2 className="h-3 w-3" />
-              : <XCircle className="h-3 w-3" />
-            }
+          <div
+            className={cn(
+              'shrink-0 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium',
+              status === PARTICIPATION_STATUS.ACCEPTED
+                ? 'bg-primary/10 text-primary'
+                : 'bg-red-500/10 text-red-400',
+            )}
+          >
+            {status === PARTICIPATION_STATUS.ACCEPTED ? (
+              <CheckCircle2 className="h-3 w-3" />
+            ) : (
+              <XCircle className="h-3 w-3" />
+            )}
             {STATUS_LABEL[status]}
           </div>
         )}
       </div>
 
-      {/* 자기소개 */}
-      {intro_message && (
+      {introMessage && (
         <div className="rounded-xl bg-background border border-border px-3 py-2.5">
-          <p className="text-sm text-foreground leading-relaxed">"{intro_message}"</p>
+          <p className="text-sm text-foreground leading-relaxed">"{introMessage}"</p>
         </div>
       )}
 
-      {/* 수락/거절 버튼 (대기 중일 때만) */}
       {status === PARTICIPATION_STATUS.PENDING && (
         <div className="flex gap-2 pt-1">
           <button
-            onClick={() => onReject(participation_id)}
+            onClick={() => onAnalyze(user.id)}
+            disabled={isAnalyzing}
+            className="flex items-center gap-1 rounded-xl border border-border px-2.5 py-2 text-xs text-muted hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50 shrink-0"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {isAnalyzing ? '분석 중...' : 'AI 케미'}
+          </button>
+          <button
+            onClick={() => onReject(participationId)}
             disabled={isActing}
             className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-2 text-sm text-muted hover:border-red-400/50 hover:text-red-400 transition-colors disabled:opacity-50"
           >
             <XCircle className="h-4 w-4" />
             거절
           </button>
-          <Button
-            onClick={() => onAccept(participation_id)}
-            disabled={isActing}
-            className="flex-1"
-          >
+          <Button onClick={() => onAccept(participationId)} disabled={isActing} className="flex-1">
             {isActing ? (
               <span className="flex items-center gap-1.5">
                 <Clock className="h-4 w-4 animate-spin" />
@@ -138,9 +118,23 @@ interface ApplicantsPageProps {
 
 export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPageProps) {
   const router = useRouter();
-  const { applicants, isLoading, actionLoading, accept, reject, pendingCount, acceptedCount } =
-    useApplicants(challengeId);
+  const {
+    applicants,
+    isLoading,
+    actionLoading,
+    accept,
+    reject,
+    closeChallenge,
+    isClosing,
+    pendingCount,
+    acceptedCount,
+    analyzeChemistry,
+    chemistryLoading,
+    chemistryResult,
+    clearChemistryResult,
+  } = useApplicants(challengeId);
   const [filter, setFilter] = useState<FilterTab>('all');
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
   const FILTER_TABS: { key: FilterTab; label: string }[] = [
     { key: 'all', label: `전체 ${applicants.length}` },
@@ -162,7 +156,6 @@ export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPagePr
 
   return (
     <AppShell className="bg-background">
-      {/* 헤더 */}
       <header className="flex items-center gap-3 border-b border-border bg-background/80 px-4 py-4 backdrop-blur-md shrink-0">
         <button
           onClick={() => router.back()}
@@ -176,9 +169,17 @@ export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPagePr
             <p className="text-xs text-muted truncate mt-0.5">{challengeTitle}</p>
           )}
         </div>
+        {acceptedCount > 0 && (
+          <button
+            onClick={() => setShowCloseConfirm(true)}
+            className="flex items-center gap-1.5 rounded-xl border border-[#e8356e]/40 bg-[#e8356e]/5 px-3 py-2 text-xs font-medium text-[#e8356e] hover:bg-[#e8356e]/10 transition-colors"
+          >
+            <Lock className="h-3.5 w-3.5" />
+            모집 마감
+          </button>
+        )}
       </header>
 
-      {/* 요약 카드 */}
       <div className="px-5 pt-4 pb-2 shrink-0">
         <div className="grid grid-cols-3 gap-2">
           <div className="rounded-xl bg-surface border border-border p-3 text-center">
@@ -198,7 +199,6 @@ export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPagePr
         </div>
       </div>
 
-      {/* 필터 탭 */}
       <div className="flex gap-2 overflow-x-auto px-5 py-2 shrink-0 no-scrollbar">
         {FILTER_TABS.map(({ key, label }) => (
           <button
@@ -216,7 +216,6 @@ export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPagePr
         ))}
       </div>
 
-      {/* 신청자 목록 */}
       <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-3">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -228,15 +227,70 @@ export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPagePr
         ) : (
           filtered.map((applicant) => (
             <ApplicantCard
-              key={applicant.participation_id}
+              key={applicant.participationId}
               applicant={applicant}
               actionLoading={actionLoading}
+              chemistryLoading={chemistryLoading}
               onAccept={accept}
               onReject={reject}
+              onAnalyze={analyzeChemistry}
             />
           ))
         )}
       </div>
+
+      {/* AI 케미 분석 결과 모달 */}
+      <Modal
+        isOpen={!!chemistryResult}
+        onClose={clearChemistryResult}
+        title="AI 케미 분석"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary shrink-0" />
+            <p className="text-sm text-muted">그룹 케미 분석 결과예요</p>
+          </div>
+          <div className="rounded-2xl bg-primary/5 border border-primary/20 p-4">
+            <p className="text-sm text-foreground leading-relaxed">{chemistryResult}</p>
+          </div>
+          <Button className="w-full" onClick={clearChemistryResult}>
+            확인
+          </Button>
+        </div>
+      </Modal>
+
+      {/* 모집 마감 확인 모달 */}
+      <Modal
+        isOpen={showCloseConfirm}
+        onClose={() => setShowCloseConfirm(false)}
+        title="모집 마감"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-foreground">
+            수락된 {acceptedCount}명으로 크루를 구성하고 모집을 마감할까요?
+          </p>
+          <p className="text-xs text-muted">마감 후에는 새로운 신청을 받을 수 없어요.</p>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setShowCloseConfirm(false)}
+            >
+              취소
+            </Button>
+            <Button
+              className="flex-1 bg-[#e8356e] hover:bg-[#e8356e]/90 shadow-[#e8356e]/30"
+              onClick={() => {
+                setShowCloseConfirm(false);
+                closeChallenge();
+              }}
+              disabled={isClosing}
+            >
+              {isClosing ? '마감 중...' : '마감하기'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </AppShell>
   );
 }

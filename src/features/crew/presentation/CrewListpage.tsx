@@ -31,8 +31,8 @@ export function CrewListPage() {
                     <div className="space-y-3 pt-2">
                         {crews.map((crew: CrewSummary) => (
                             <Link
-                                key={crew.crew_id}
-                                href={`/crews/${crew.crew_id}`}
+                                key={crew.crewId}
+                                href={`/crews/${crew.crewId}`}
                                 className="group relative flex items-center gap-4 rounded-2xl bg-surface p-4 border border-border hover:border-primary/30 transition-all active:scale-[0.98]"
                             >
                                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -41,15 +41,15 @@ export function CrewListPage() {
 
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                                        {crew.challenge_title}
+                                        {crew.challengeTitle}
                                     </h3>
                                     <div className="flex items-center gap-3 mt-1 text-xs text-muted">
                                         <span className="flex items-center gap-1">
-                                            <Users className="h-3 w-3" /> {crew.member_count}명
+                                            <Users className="h-3 w-3" /> {crew.memberCount}명
                                         </span>
-                                        {crew.last_activity_at && (
+                                        {crew.lastActivityAt && (
                                             <span className="flex items-center gap-1">
-                                                <MessageSquare className="h-3 w-3" /> {formatRelativeTime(crew.last_activity_at)}
+                                                <MessageSquare className="h-3 w-3" /> {formatRelativeTime(crew.lastActivityAt)}
                                             </span>
                                         )}
                                     </div>

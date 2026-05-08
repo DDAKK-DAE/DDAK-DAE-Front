@@ -140,7 +140,7 @@ export function CrewDetailPage({ crewId }: CrewDetailPageProps) {
                         {msg.content}
                       </div>
                       <span className="text-[10px] text-subtle px-1">
-                        {formatRelativeTime(msg.created_at)}
+                        {formatRelativeTime(msg.createdAt)}
                       </span>
                     </div>
                   </div>
@@ -177,19 +177,16 @@ export function CrewDetailPage({ crewId }: CrewDetailPageProps) {
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
           {crew.members.map((member) => (
             <div
-              key={member.user.id}
+              key={member.userId}
               className="flex items-center gap-3 rounded-2xl bg-surface p-4 border border-border"
             >
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-base">
-                {member.user.nickname.slice(0, 1)}
+                {member.nickname.slice(0, 1)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-foreground">{member.user.nickname}</p>
-                <p className="text-xs text-muted mt-0.5">
-                  {formatRelativeTime(member.joined_at)} 참여
-                </p>
+                <p className="font-semibold text-foreground">{member.nickname}</p>
               </div>
-              {member.user.id === crew.challenge.host?.id && (
+              {member.userId === crew.challenge.host?.id && (
                 <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                   크루장
                 </span>
@@ -212,7 +209,7 @@ export function CrewDetailPage({ crewId }: CrewDetailPageProps) {
           ) : (
             recommendations.map((rec) => (
               <div
-                key={rec.challenge_id}
+                key={rec.challengeId}
                 className="rounded-2xl border border-border bg-surface p-4 space-y-2"
               >
                 <div className="flex items-start gap-2">

@@ -5,15 +5,6 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { getMeApi } from '@/api/endpoints/auth';
 import type { User } from '@/features/auth/domain/entities/User';
 
-const MOCK_TOKEN = 'mock-token';
-const MOCK_USER: User = {
-  id: 'mock-1',
-  email: 'test@ddak.com',
-  nickname: '딱대유저',
-  bio: '테스트 계정이에요 🎬',
-  job: '개발자',
-};
-
 interface AuthContextValue {
   currentUser: User | null;
   isLoading: boolean;
@@ -35,12 +26,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loadUser = useCallback(async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      // 목 토큰이면 API 없이 목 유저 반환
-      if (token === MOCK_TOKEN) {
-        setCurrentUser(MOCK_USER);
-        return;
-      }
       const user = await getMeApi();
       setCurrentUser(user);
     } catch {

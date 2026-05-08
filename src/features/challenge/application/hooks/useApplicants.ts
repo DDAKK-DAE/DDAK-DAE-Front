@@ -1,103 +1,90 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import {
   getApplicantsApi,
   acceptParticipationApi,
   rejectParticipationApi,
 } from '@/api/endpoints/participations';
+import { closeChallengeApi } from '@/api/endpoints/challenges';
+import { analyzeGroupChemistryApi } from '@/api/endpoints/ai';
 import type { ApplicantDetail } from '@/features/challenge/domain/entities/Challenge';
 
-const MOCK_APPLICANTS: ApplicantDetail[] = [
-  {
-    participation_id: 'p1',
-    user: { id: 'u1', email: 'a@a.com', nickname: '댄서김민준', job: '댄서', bio: '춤추는 게 세상에서 제일 좋아요' },
-    intro_message: '아이브 팬이에요! 같이 찍고 싶어요 🙌',
-    status: 'pending',
-    participation_history: { total_count: 5, categories: ['댄스', '일상'] },
-  },
-  {
-    participation_id: 'p2',
-    user: { id: 'u2', email: 'b@b.com', nickname: '이수진', job: '대학생' },
-    intro_message: '챌린지 처음 도전해봐요!',
-    status: 'pending',
-    participation_history: { total_count: 1, categories: ['댄스'] },
-  },
-  {
-    participation_id: 'p3',
-    user: { id: 'u3', email: 'c@c.com', nickname: '박지훈크루', job: '유튜버', bio: '크루 챌린지 전문' },
-    status: 'accepted',
-    participation_history: { total_count: 12, categories: ['댄스', '스포츠', '일상'] },
-  },
-  {
-    participation_id: 'p4',
-    user: { id: 'u4', email: 'd@d.com', nickname: '최예린', job: '직장인' },
-    intro_message: '퇴근 후 취미로 댄스 배우고 있어요',
-    status: 'rejected',
-    participation_history: { total_count: 3, categories: ['댄스', '푸드'] },
-  },
-];
+const MOCK_CHEMISTRY_ANALYSIS = '이 멤버와 기존 크루원들은 비슷한 챌린지 경험을 가지고 있어 좋은 케미가 예상돼요!';
 
 export function useApplicants(challengeId: string) {
-  const [applicants, setApplicants] = useState<ApplicantDetail[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const queryKey = ['applicants', challengeId];
 
-  useEffect(() => {
-    async function fetchApplicants() {
-      try {
-        setIsLoading(true);
-        if (!process.env.NEXT_PUBLIC_API_BASE_URL) throw new Error('no api url');
-        const data = await getApplicantsApi(challengeId);
-        setApplicants(data);
-      } catch {
-        setApplicants(MOCK_APPLICANTS);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  const { data: applicants = [], isLoading } = useQuery<ApplicantDetail[]>({
+    queryKey,
+    queryFn: () => getApplicantsApi(challengeId),
+    enabled: !!challengeId,
+  });
 
-    fetchApplicants();
-  }, [challengeId]);
+  const acceptMutation = useMutation({
+    mutationFn: (participationId: string) => acceptParticipationApi(participationId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+  });
 
-  const accept = useCallback(async (participationId: string) => {
-    setActionLoading(participationId);
+  const rejectMutation = useMutation({
+    mutationFn: (participationId: string) => rejectParticipationApi(participationId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+  });
+
+  const closeMutation = useMutation({
+    mutationFn: () => closeChallengeApi(challengeId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['my-crews'] });
+      router.push(`/crews/${data.crewId}`);
+    },
+  });
+
+  const [chemistryLoading, setChemistryLoading] = useState<string | null>(null);
+  const [chemistryResult, setChemistryResult] = useState<string | null>(null);
+
+  const analyzeChemistry = async (candidateUserId: string) => {
+    const acceptedIds = applicants
+      .filter((a) => a.status === 'accepted')
+      .map((a) => a.user.id);
+    setChemistryLoading(candidateUserId);
     try {
-      if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
-        await new Promise((r) => setTimeout(r, 400));
-      } else {
-        await acceptParticipationApi(participationId);
-      }
-      setApplicants((prev) =>
-        prev.map((a) =>
-          a.participation_id === participationId ? { ...a, status: 'accepted' } : a,
-        ),
-      );
+      const result = await analyzeGroupChemistryApi({
+        challengeId,
+        acceptedUserIds: acceptedIds,
+        candidateUserId,
+      });
+      setChemistryResult(result.analysis);
+    } catch {
+      setChemistryResult(MOCK_CHEMISTRY_ANALYSIS);
     } finally {
-      setActionLoading(null);
+      setChemistryLoading(null);
     }
-  }, []);
-
-  const reject = useCallback(async (participationId: string) => {
-    setActionLoading(participationId);
-    try {
-      if (!process.env.NEXT_PUBLIC_API_BASE_URL) {
-        await new Promise((r) => setTimeout(r, 400));
-      } else {
-        await rejectParticipationApi(participationId);
-      }
-      setApplicants((prev) =>
-        prev.map((a) =>
-          a.participation_id === participationId ? { ...a, status: 'rejected' } : a,
-        ),
-      );
-    } finally {
-      setActionLoading(null);
-    }
-  }, []);
+  };
 
   const pendingCount = applicants.filter((a) => a.status === 'pending').length;
   const acceptedCount = applicants.filter((a) => a.status === 'accepted').length;
 
-  return { applicants, isLoading, actionLoading, accept, reject, pendingCount, acceptedCount };
+  return {
+    applicants,
+    isLoading,
+    actionLoading: acceptMutation.isPending
+      ? acceptMutation.variables
+      : rejectMutation.isPending
+        ? rejectMutation.variables
+        : null,
+    accept: acceptMutation.mutate,
+    reject: rejectMutation.mutate,
+    closeChallenge: closeMutation.mutate,
+    isClosing: closeMutation.isPending,
+    pendingCount,
+    acceptedCount,
+    analyzeChemistry,
+    chemistryLoading,
+    chemistryResult,
+    clearChemistryResult: () => setChemistryResult(null),
+  };
 }

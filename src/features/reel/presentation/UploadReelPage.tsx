@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Video, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, UploadCloud, X, Play } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { Button } from '@/shared/components/ui/Button';
 import { Select } from '@/shared/components/ui/Select';
 import { useUploadReel } from '../application/useUploadReel';
 import { useMyCrews } from '@/features/crew/application/useMyCrews';
 import { cn } from '@/shared/utils/cn';
+
+const MAX_VIDEO_SIZE = 200 * 1024 * 1024;
 
 const REEL_TYPE_OPTIONS = [
   {
@@ -34,38 +36,44 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
   const router = useRouter();
   const { upload, isUploading, uploadedReel, error } = useUploadReel();
   const { crews } = useMyCrews();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [videoUrl, setVideoUrl] = useState('');
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [reelType, setReelType] = useState<'recruitment' | 'completion'>('recruitment');
   const [selectedCrewId, setSelectedCrewId] = useState<string>('');
-  const [urlError, setUrlError] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const isCompletionType = reelType === 'completion';
 
-  const validateUrl = (url: string) => {
-    if (!url.trim()) {
-      setUrlError('영상 URL을 입력해주세요');
-      return false;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > MAX_VIDEO_SIZE) {
+      setFileError('파일 크기가 200MB를 초과해요');
+      return;
     }
-    try {
-      new URL(url);
-      setUrlError(null);
-      return true;
-    } catch {
-      setUrlError('올바른 URL 형식이 아니에요');
-      return false;
-    }
+    if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+    setVideoFile(file);
+    setVideoPreviewUrl(URL.createObjectURL(file));
+    setFileError(null);
+  };
+
+  const clearFile = () => {
+    if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+    setVideoFile(null);
+    setVideoPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async () => {
-    if (!validateUrl(videoUrl)) return;
+    if (!videoFile) return;
     if (isCompletionType && !selectedCrewId) return;
 
     await upload({
       challengeId,
       crewId: isCompletionType ? selectedCrewId : undefined,
-      videoUrl: videoUrl.trim(),
-      type: reelType,
+      videoFile,
     });
   };
 
@@ -78,22 +86,13 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
           </div>
           <div>
             <h2 className="text-xl font-bold text-foreground">업로드 완료!</h2>
-            <p className="mt-2 text-sm text-muted">
-              릴스가 성공적으로 올라갔어요 🎉
-            </p>
+            <p className="mt-2 text-sm text-muted">릴스가 성공적으로 올라갔어요 🎉</p>
           </div>
           <div className="flex w-full flex-col gap-2">
-            <Button
-              className="w-full"
-              onClick={() => router.push(`/challenges/${challengeId}/reels`)}
-            >
+            <Button className="w-full" onClick={() => router.push(`/challenges/${challengeId}/reels`)}>
               릴스 보러 가기
             </Button>
-            <Button
-              variant="secondary"
-              className="w-full"
-              onClick={() => router.back()}
-            >
+            <Button variant="secondary" className="w-full" onClick={() => router.back()}>
               돌아가기
             </Button>
           </div>
@@ -104,7 +103,6 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
 
   return (
     <AppShell className="bg-background">
-      {/* 헤더 */}
       <header className="flex items-center gap-3 border-b border-border bg-background/80 px-4 py-4 backdrop-blur-md shrink-0">
         <button
           onClick={() => router.back()}
@@ -157,8 +155,8 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
               onChange={setSelectedCrewId}
               placeholder="크루 선택..."
               options={crews.map((crew) => ({
-                value: crew.crew_id,
-                label: `${crew.challenge_title} (${crew.member_count}명)`,
+                value: crew.crewId,
+                label: `${crew.challengeTitle} (${crew.memberCount}명)`,
               }))}
             />
             {!selectedCrewId && (
@@ -167,53 +165,68 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
           </section>
         )}
 
-        {/* 영상 URL 입력 */}
-        <section className="space-y-2">
-          <label className="text-sm font-semibold text-foreground">영상 URL</label>
-          <div className="relative">
-            <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
-              <Video className="h-4 w-4 text-muted" />
-            </div>
-            <input
-              type="url"
-              value={videoUrl}
-              onChange={(e) => {
-                setVideoUrl(e.target.value);
-                if (urlError) setUrlError(null);
-              }}
-              onBlur={() => { if (videoUrl) validateUrl(videoUrl); }}
-              placeholder="https://..."
-              className={cn(
-                'w-full rounded-2xl border bg-surface py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-subtle outline-none transition-colors',
-                urlError ? 'border-red-400 focus:border-red-400' : 'border-border focus:border-primary',
-              )}
-            />
-          </div>
-          {urlError && (
-            <div className="flex items-center gap-1.5 text-xs text-red-400">
-              <AlertCircle className="h-3 w-3" />
-              {urlError}
+        {/* 영상 파일 선택 */}
+        <section className="space-y-3">
+          <label className="text-sm font-semibold text-foreground">
+            영상 파일 <span className="text-red-400">*</span>
+          </label>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+
+          {!videoFile ? (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full rounded-2xl border-2 border-dashed border-border bg-surface/60 backdrop-blur-sm p-8 flex flex-col items-center gap-3 hover:border-primary/40 hover:bg-primary/5 transition-all"
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <UploadCloud className="h-7 w-7 text-primary" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-medium text-foreground">영상 파일 선택</p>
+                <p className="text-xs text-muted mt-1">최대 200MB · MP4, MOV 등</p>
+              </div>
+            </button>
+          ) : (
+            <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+              <div className="relative aspect-[9/16] max-h-64 bg-black">
+                <video
+                  src={videoPreviewUrl ?? undefined}
+                  controls
+                  playsInline
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <div className="flex items-center gap-3 px-4 py-3">
+                <Play className="h-4 w-4 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground truncate">{videoFile.name}</p>
+                  <p className="text-xs text-muted mt-0.5">
+                    {(videoFile.size / (1024 * 1024)).toFixed(1)} MB
+                  </p>
+                </div>
+                <button
+                  onClick={clearFile}
+                  className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-border transition-colors"
+                >
+                  <X className="h-4 w-4 text-muted" />
+                </button>
+              </div>
             </div>
           )}
-          <p className="text-xs text-muted">
-            촬영한 영상을 클라우드(구글 드라이브, Dropbox 등)에 올린 후 공유 링크를 입력해주세요
-          </p>
-        </section>
 
-        {/* 미리보기 */}
-        {videoUrl && !urlError && (
-          <section className="space-y-2">
-            <label className="text-sm font-semibold text-foreground">미리보기</label>
-            <div className="relative overflow-hidden rounded-2xl bg-black aspect-[9/16] max-h-64">
-              <video
-                src={videoUrl}
-                controls
-                playsInline
-                className="h-full w-full object-cover"
-              />
+          {fileError && (
+            <div className="flex items-center gap-1.5 text-xs text-red-400">
+              <AlertCircle className="h-3 w-3" />
+              {fileError}
             </div>
-          </section>
-        )}
+          )}
+        </section>
 
         {error && (
           <div className="flex items-center gap-2 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
@@ -223,13 +236,12 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
         )}
       </div>
 
-      {/* 업로드 버튼 */}
       <div className="absolute bottom-0 left-0 right-0 border-t border-border bg-background/90 backdrop-blur-md px-5 py-4">
         <Button
           className="w-full"
           size="lg"
           onClick={() => void handleSubmit()}
-          disabled={isUploading || !videoUrl || (isCompletionType && !selectedCrewId)}
+          disabled={isUploading || !videoFile || (isCompletionType && !selectedCrewId)}
         >
           {isUploading ? '업로드 중...' : '릴스 올리기'}
         </Button>

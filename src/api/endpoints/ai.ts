@@ -1,16 +1,10 @@
-// src/api/endpoints/ai.ts
-// AI API 엔드포인트 — api_spec.md AI 섹션 기준 (FastAPI 별도 서버)
 import { aiApiClient } from '../client';
 import type { ApiResponse } from '@/shared/types/api';
 
-// ==========================================
-// Request/Response 타입 정의
-// ==========================================
-
 export interface GenerateChallengeDescriptionRequest {
   title: string;
-  location_text: string;
-  max_participants: number;
+  locationText: string;
+  maxParticipants: number;
 }
 
 export interface GenerateChallengeDescriptionResponse {
@@ -19,9 +13,9 @@ export interface GenerateChallengeDescriptionResponse {
 }
 
 export interface AnalyzeGroupChemistryRequest {
-  challenge_id: string;
-  accepted_user_ids: string[];
-  candidate_user_id: string;
+  challengeId: string;
+  acceptedUserIds: string[];
+  candidateUserId: string;
 }
 
 export interface AnalyzeGroupChemistryResponse {
@@ -29,7 +23,7 @@ export interface AnalyzeGroupChemistryResponse {
 }
 
 export interface CrewRecommendation {
-  challenge_id: string;
+  challengeId: string;
   title: string;
   reason: string;
 }
@@ -38,11 +32,7 @@ export interface GetCrewRecommendationsResponse {
   recommendations: CrewRecommendation[];
 }
 
-// ==========================================
-// AI API 함수 (FastAPI 서버)
-// ==========================================
-
-/** POST /ai/challenge-description — 챌린지 글 자동 작성 */
+/** POST /ai/challenge-description */
 export async function generateChallengeDescriptionApi(
   request: GenerateChallengeDescriptionRequest,
 ): Promise<GenerateChallengeDescriptionResponse> {
@@ -50,10 +40,12 @@ export async function generateChallengeDescriptionApi(
     '/ai/challenge-description',
     request,
   );
-  return response.data.data;
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }
 
-/** POST /ai/group-chemistry — 그룹 케미 분석 */
+/** POST /ai/group-chemistry */
 export async function analyzeGroupChemistryApi(
   request: AnalyzeGroupChemistryRequest,
 ): Promise<AnalyzeGroupChemistryResponse> {
@@ -61,15 +53,19 @@ export async function analyzeGroupChemistryApi(
     '/ai/group-chemistry',
     request,
   );
-  return response.data.data;
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }
 
-/** GET /crews/:id/recommendation — 크루 챌린지 추천 */
+/** GET /crews/:id/recommendation */
 export async function getCrewRecommendationsApi(
   crewId: string,
 ): Promise<GetCrewRecommendationsResponse> {
   const response = await aiApiClient.get<ApiResponse<GetCrewRecommendationsResponse>>(
     `/crews/${crewId}/recommendation`,
   );
-  return response.data.data;
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }

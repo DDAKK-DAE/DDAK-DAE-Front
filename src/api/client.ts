@@ -13,10 +13,16 @@ import axios, {
 // Spring Boot 메인 API 서버
 export const apiClient: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080',
-  timeout: 3000,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+// 파일 업로드 전용 클라이언트 — 영상 200MB 허용 위해 timeout 60초
+export const uploadClient: AxiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080',
+  timeout: 60000,
 });
 
 // FastAPI AI 서버 (별도 baseURL — api_spec.md AI 섹션)
@@ -70,6 +76,8 @@ function applyResponseInterceptor(client: AxiosInstance): void {
 }
 
 applyRequestInterceptor(apiClient);
+applyRequestInterceptor(uploadClient);
 applyRequestInterceptor(aiApiClient);
 applyResponseInterceptor(apiClient);
+applyResponseInterceptor(uploadClient);
 applyResponseInterceptor(aiApiClient);

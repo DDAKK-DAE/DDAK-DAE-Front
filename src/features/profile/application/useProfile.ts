@@ -1,59 +1,57 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/features/auth/application/store/AuthContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getMeApi, updateMeApi, type UpdateProfileRequest } from '@/api/endpoints/auth';
 import { getMyCrewsApi } from '@/api/endpoints/crews';
-import { getChallengesApi } from '@/api/endpoints/challenges';
+import { getUserReelsApi } from '@/api/endpoints/reels';
+import { uploadFileApi } from '@/api/endpoints/files';
+import { useAuth } from '@/features/auth/application/store/AuthContext';
 import type { CrewSummary } from '@/features/crew/domain/entities/Crew';
-import type { Challenge } from '@/features/challenge/domain/entities/Challenge';
-
-const MOCK_CREWS: CrewSummary[] = [
-  { crew_id: 'c1', challenge_title: '장원영 챌린지 같이 찍어요 ✨', member_count: 4, last_activity_at: new Date().toISOString() },
-  { crew_id: 'c2', challenge_title: '한강 피크닉 일상 브이로그 🌅', member_count: 3, last_activity_at: new Date(Date.now() - 3600000).toISOString() },
-];
-
-const MOCK_MY_CHALLENGES: Challenge[] = [
-  {
-    id: 'ch10',
-    title: '성수동 카페 탐방 먹방 🍰',
-    category: '푸드',
-    location_text: '서울 성수동',
-    max_participants: 4,
-    current_participants: 2,
-    status: 'open',
-    host: { id: 'mock-1', nickname: '딱대유저' },
-    deadline_at: new Date(Date.now() + 5 * 86400000).toISOString(),
-    created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-  },
-];
+import type { Reel } from '@/features/reel/domain/entities/Reel';
 
 export function useProfile() {
   const { currentUser, signOut } = useAuth();
-  const [crews, setCrews] = useState<CrewSummary[]>([]);
-  const [myChallenges, setMyChallenges] = useState<Challenge[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        if (!process.env.NEXT_PUBLIC_API_BASE_URL) throw new Error('no api url');
-        const [crewData, challengeData] = await Promise.all([
-          getMyCrewsApi(),
-          getChallengesApi(),
-        ]);
-        setCrews(crewData ?? []);
-        setMyChallenges(challengeData.filter((c) => c.host.id === currentUser?.id));
-      } catch {
-        setCrews(MOCK_CREWS);
-        setMyChallenges(MOCK_MY_CHALLENGES);
-      } finally {
-        setIsLoading(false);
+  const { data: crews = [], isLoading: isCrewsLoading } = useQuery<CrewSummary[]>({
+    queryKey: ['my-crews'],
+    queryFn: getMyCrewsApi,
+    enabled: !!currentUser,
+  });
+
+  const { data: myReels = [], isLoading: isReelsLoading } = useQuery<Reel[]>({
+    queryKey: ['user-reels', currentUser?.id],
+    queryFn: () => getUserReelsApi(currentUser!.id),
+    enabled: !!currentUser?.id,
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: UpdateProfileRequest & { imageFile?: File }) => {
+      let profileImage = data.profileImage;
+      if (data.imageFile) {
+        const { url } = await uploadFileApi(data.imageFile);
+        profileImage = url;
       }
-    }
+      const { imageFile: _, ...rest } = data;
+      return updateMeApi({ ...rest, profileImage });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['me'] });
+    },
+  });
 
-    fetchData();
-  }, [currentUser?.id]);
+  const isLoading = isCrewsLoading || isReelsLoading;
 
-  return { currentUser, crews, myChallenges, isLoading, signOut };
+  return {
+    currentUser,
+    crews,
+    myReels,
+    isLoading,
+    signOut,
+    updateProfile: updateProfileMutation.mutateAsync,
+    isUpdating: updateProfileMutation.isPending,
+    updateError: updateProfileMutation.isError
+      ? (updateProfileMutation.error?.message ?? '프로필 수정 중 오류가 발생했어요.')
+      : null,
+  };
 }

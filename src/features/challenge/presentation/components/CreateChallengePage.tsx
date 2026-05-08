@@ -1,11 +1,12 @@
 'use client';
 
+import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, X, Minus } from 'lucide-react';
+import { ArrowLeft, Plus, X, Minus, UploadCloud, Music, Sparkles, Video } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { Button } from '@/shared/components/ui/Button';
 import { DatePicker } from '@/shared/components/ui/DatePicker';
-import { useCreateChallenge } from '../../application/hooks/useCreateChallenge';
+import { useCreateChallenge, type UploadProgress } from '../../application/hooks/useCreateChallenge';
 import { cn } from '@/shared/utils/cn';
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -19,8 +20,24 @@ const CATEGORY_COLORS: Record<string, string> = {
 const INPUT_BASE =
   'w-full rounded-xl bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-subtle outline-none focus:border-primary transition-colors';
 
+const PROGRESS_LABELS: Record<UploadProgress, string> = {
+  idle: '챌린지 만들기',
+  uploadingVideo: '영상 업로드 중...',
+  uploadingAudio: '음원 업로드 중...',
+  creating: '챌린지 생성 중...',
+  attachingReel: '모집 릴스 등록 중...',
+};
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
 export function CreateChallengePage() {
   const router = useRouter();
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
   const {
     form,
     tagInput,
@@ -30,12 +47,20 @@ export function CreateChallengePage() {
     removeTag,
     isValid,
     isSubmitting,
+    uploadProgress,
     error,
     submit,
     CATEGORIES,
+    isGeneratingAi,
+    generateAiDescription,
   } = useCreateChallenge();
 
   const today = new Date().toISOString().split('T')[0];
+  const isVideoTooLarge = form.videoFile ? form.videoFile.size > 200 * 1024 * 1024 : false;
+  const videoObjectUrl = form.videoFile ? URL.createObjectURL(form.videoFile) : null;
+
+  const canGenerateAi =
+    form.title.trim().length > 0 && form.locationText.trim().length > 0 && !isGeneratingAi;
 
   return (
     <AppShell className="bg-background">
@@ -52,6 +77,86 @@ export function CreateChallengePage() {
 
       {/* Form */}
       <div className="flex-1 overflow-y-auto px-5 py-6 pb-32 space-y-6">
+
+        {/* 모집 릴스 영상 — 핵심 UX: 영상이 곧 모집 공고 */}
+        <section className="space-y-2">
+          <label className="text-sm font-semibold text-foreground">
+            모집 릴스 영상 <span className="text-[#e8356e]">*</span>
+          </label>
+          <p className="text-xs text-muted">혼자 찍은 영상을 올려서 같이 찍을 사람을 모아보세요</p>
+
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              updateField('videoFile', file);
+              e.target.value = '';
+            }}
+          />
+
+          {form.videoFile ? (
+            <div className="relative rounded-2xl overflow-hidden border border-primary/30">
+              <video
+                src={videoObjectUrl ?? undefined}
+                className="w-full aspect-[9/16] object-cover bg-surface"
+                muted
+                autoPlay
+                loop
+                playsInline
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-foreground truncate max-w-[200px]">
+                    {form.videoFile.name}
+                  </span>
+                  <span className={cn('text-xs ml-2 shrink-0', isVideoTooLarge ? 'text-[#e8356e]' : 'text-muted')}>
+                    {formatBytes(form.videoFile.size)}
+                    {isVideoTooLarge && ' (200MB 초과)'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => updateField('videoFile', null)}
+                className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-xl bg-background/80 backdrop-blur-sm text-foreground hover:bg-surface transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => videoInputRef.current?.click()}
+              className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden flex flex-col items-center justify-center gap-3 transition-all"
+              style={{
+                background: 'rgba(18,30,23,0.6)',
+                backdropFilter: 'blur(24px)',
+                padding: '1px',
+              }}
+            >
+              <div
+                className="absolute inset-0 rounded-2xl"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(5,166,107,0.3) 0%, rgba(232,53,110,0.2) 100%)',
+                  padding: '1px',
+                  WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                  WebkitMaskComposite: 'xor',
+                  maskComposite: 'exclude',
+                }}
+              />
+              <div className="flex flex-col items-center gap-3 px-6 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 border border-primary/30">
+                  <UploadCloud className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">모집 릴스 영상 추가</p>
+                  <p className="mt-1 text-xs text-muted">탭해서 영상을 선택하세요 (최대 200MB)</p>
+                </div>
+              </div>
+            </button>
+          )}
+        </section>
 
         {/* 제목 */}
         <section className="space-y-2">
@@ -99,8 +204,8 @@ export function CreateChallengePage() {
           </label>
           <input
             type="text"
-            value={form.location_text}
-            onChange={(e) => updateField('location_text', e.target.value)}
+            value={form.locationText}
+            onChange={(e) => updateField('locationText', e.target.value)}
             placeholder="예: 서울 홍대 야외무대"
             className={INPUT_BASE}
           />
@@ -112,8 +217,8 @@ export function CreateChallengePage() {
             모집 마감일 <span className="text-[#e8356e]">*</span>
           </label>
           <DatePicker
-            value={form.deadline_at}
-            onChange={(v) => updateField('deadline_at', v)}
+            value={form.deadlineAt}
+            onChange={(v) => updateField('deadlineAt', v)}
             min={today}
           />
         </section>
@@ -123,19 +228,19 @@ export function CreateChallengePage() {
           <label className="text-sm font-semibold text-foreground">최대 인원</label>
           <div className="flex items-center gap-4">
             <button
-              onClick={() => updateField('max_participants', Math.max(2, form.max_participants - 1))}
-              disabled={form.max_participants <= 2}
+              onClick={() => updateField('maxParticipants', Math.max(2, form.maxParticipants - 1))}
+              disabled={form.maxParticipants <= 2}
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-border text-foreground disabled:opacity-30 transition-opacity"
             >
               <Minus className="h-4 w-4" />
             </button>
             <div className="flex-1 text-center">
-              <span className="text-2xl font-bold text-foreground">{form.max_participants}</span>
+              <span className="text-2xl font-bold text-foreground">{form.maxParticipants}</span>
               <span className="ml-1 text-sm text-muted">명</span>
             </div>
             <button
-              onClick={() => updateField('max_participants', Math.min(6, form.max_participants + 1))}
-              disabled={form.max_participants >= 6}
+              onClick={() => updateField('maxParticipants', Math.min(6, form.maxParticipants + 1))}
+              disabled={form.maxParticipants >= 6}
               className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface border border-border text-foreground disabled:opacity-30 transition-opacity"
             >
               <Plus className="h-4 w-4" />
@@ -147,7 +252,7 @@ export function CreateChallengePage() {
                 key={i}
                 className={cn(
                   'h-1.5 w-1.5 rounded-full transition-colors',
-                  i < form.max_participants - 1 ? 'bg-primary' : 'bg-border',
+                  i < form.maxParticipants - 1 ? 'bg-primary' : 'bg-border',
                 )}
               />
             ))}
@@ -155,9 +260,24 @@ export function CreateChallengePage() {
           <p className="text-center text-xs text-subtle">최소 2명 · 최대 6명</p>
         </section>
 
-        {/* 설명 */}
+        {/* 설명 + AI 자동작성 */}
         <section className="space-y-2">
-          <label className="text-sm font-semibold text-foreground">소개 (선택)</label>
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-semibold text-foreground">소개 (선택)</label>
+            <button
+              onClick={() => void generateAiDescription()}
+              disabled={!canGenerateAi}
+              className={cn(
+                'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition-all',
+                canGenerateAi
+                  ? 'border-primary/50 text-primary hover:bg-primary/10'
+                  : 'border-border text-subtle opacity-40 cursor-not-allowed',
+              )}
+            >
+              <Sparkles className="h-3 w-3" />
+              {isGeneratingAi ? 'AI 작성 중...' : 'AI 자동작성'}
+            </button>
+          </div>
           <textarea
             value={form.description}
             onChange={(e) => updateField('description', e.target.value)}
@@ -167,6 +287,52 @@ export function CreateChallengePage() {
             className={cn(INPUT_BASE, 'resize-none')}
           />
           <p className="text-right text-xs text-subtle">{form.description.length}/300</p>
+        </section>
+
+        {/* 챌린지 음원 (선택) */}
+        <section className="space-y-2">
+          <label className="text-sm font-semibold text-foreground">챌린지 음원 (선택)</label>
+          <p className="text-xs text-muted">선택하지 않으면 영상 음원이 사용돼요</p>
+
+          <input
+            ref={audioInputRef}
+            type="file"
+            accept="audio/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              updateField('audioFile', file);
+              e.target.value = '';
+            }}
+          />
+
+          {form.audioFile ? (
+            <div className="flex items-center gap-3 rounded-xl bg-surface border border-border px-4 py-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <Music className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-foreground truncate">{form.audioFile.name}</p>
+                <p className="text-xs text-muted">{formatBytes(form.audioFile.size)}</p>
+              </div>
+              <button
+                onClick={() => updateField('audioFile', null)}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg hover:bg-elevated transition-colors"
+              >
+                <X className="h-3.5 w-3.5 text-muted" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => audioInputRef.current?.click()}
+              className="flex w-full items-center gap-3 rounded-xl bg-surface/60 border border-border px-4 py-3 hover:border-primary/40 transition-colors"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface border border-border">
+                <Music className="h-4 w-4 text-muted" />
+              </div>
+              <span className="text-sm text-subtle">음원 파일 추가</span>
+            </button>
+          )}
         </section>
 
         {/* 해시태그 */}
@@ -209,7 +375,7 @@ export function CreateChallengePage() {
         </section>
 
         {error && (
-          <p className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
+          <p className="rounded-xl bg-[#e8356e]/10 border border-[#e8356e]/20 px-4 py-3 text-sm text-[#e8356e]">
             {error}
           </p>
         )}
@@ -217,13 +383,25 @@ export function CreateChallengePage() {
 
       {/* Bottom CTA */}
       <div className="absolute bottom-0 left-0 right-0 border-t border-border bg-background/90 backdrop-blur-md px-5 py-4">
+        {isVideoTooLarge && (
+          <p className="mb-2 text-center text-xs text-[#e8356e]">
+            영상 파일이 200MB를 초과했어요
+          </p>
+        )}
         <Button
           className="w-full"
           size="lg"
           onClick={() => void submit()}
-          disabled={!isValid || isSubmitting}
+          disabled={!isValid || isSubmitting || isVideoTooLarge}
         >
-          {isSubmitting ? '생성 중...' : '챌린지 만들기'}
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <Video className="h-4 w-4 animate-pulse" />
+              {PROGRESS_LABELS[uploadProgress]}
+            </span>
+          ) : (
+            PROGRESS_LABELS.idle
+          )}
         </Button>
       </div>
     </AppShell>

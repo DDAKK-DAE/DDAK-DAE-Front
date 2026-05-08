@@ -48,7 +48,7 @@ export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
   const joinable = isChallengeJoinable(challenge);
   const remaining = getRemainingSlots(challenge);
   const badgeClass = CATEGORY_BADGE[challenge.category] ?? 'border-white/30 text-white/70 bg-white/10';
-  const filledSlots = challenge.current_participants;
+  const filledSlots = challenge.currentParticipants;
   const isHost = currentUser?.id === challenge.host.id;
 
   const handleApply = async () => {
@@ -89,11 +89,6 @@ export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
           <span className="absolute bottom-3 left-4 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
             탭하여 릴스 보기
           </span>
-          {challenge.recruitment_reels.length > 0 && (
-            <span className="absolute bottom-3 right-4 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
-              모집 릴스 {challenge.recruitment_reels.length}개
-            </span>
-          )}
         </button>
 
         <div className="px-5 pt-5 space-y-5">
@@ -109,17 +104,17 @@ export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
           <div className="rounded-2xl bg-surface border border-border divide-y divide-border overflow-hidden">
             <div className="flex items-center gap-3 px-4 py-3">
               <MapPin className="h-4 w-4 shrink-0 text-primary" />
-              <span className="text-sm text-foreground">{challenge.location_text}</span>
+              <span className="text-sm text-foreground">{challenge.locationText}</span>
             </div>
             <div className="flex items-center gap-3 px-4 py-3">
               <Clock className="h-4 w-4 shrink-0 text-[#f5a318]" />
-              <span className="text-sm text-foreground">{getDeadlineLabel(challenge.deadline_at)}</span>
+              <span className="text-sm text-foreground">{getDeadlineLabel(challenge.deadlineAt)}</span>
             </div>
             <div className="flex items-center gap-3 px-4 py-3">
               <Users className="h-4 w-4 shrink-0 text-[#07d98a]" />
               <div className="flex-1 flex items-center gap-3">
                 <div className="flex gap-1">
-                  {Array.from({ length: challenge.max_participants }).map((_, i) => (
+                  {Array.from({ length: challenge.maxParticipants }).map((_, i) => (
                     <div
                       key={i}
                       className={cn(
@@ -130,7 +125,7 @@ export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
                   ))}
                 </div>
                 <span className="text-sm text-foreground">
-                  {filledSlots}/{challenge.max_participants}명
+                  {filledSlots}/{challenge.maxParticipants}명
                   {remaining > 0 && (
                     <span className="ml-1.5 font-medium text-primary">· {remaining}자리 남음</span>
                   )}

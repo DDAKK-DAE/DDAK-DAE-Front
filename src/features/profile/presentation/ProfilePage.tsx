@@ -2,28 +2,25 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut, ChevronRight, MapPin, Clock, Users, ClipboardList } from 'lucide-react';
+import { LogOut, ChevronRight, Users, Play } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { useProfile } from '../application/useProfile';
+import { formatRelativeTime } from '@/shared/utils/formatDate';
 import { cn } from '@/shared/utils/cn';
 
-const CATEGORY_COLOR: Record<string, string> = {
-  댄스: 'text-[#e8356e] bg-[#e8356e]/10',
-  일상: 'text-[#f5a318] bg-[#f5a318]/10',
-  스포츠: 'text-[#07d98a] bg-[#07d98a]/10',
-  푸드: 'text-[#f5a318] bg-[#f5a318]/10',
-  기타: 'text-purple-300 bg-purple-500/10',
-};
+const REEL_TYPE_LABEL = {
+  recruitment: '모집 릴스',
+  completion: '완료 릴스',
+} as const;
 
-function getDeadlineDays(iso: string) {
-  const d = Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000);
-  if (d <= 0) return '마감';
-  return `D-${d}`;
-}
+const REEL_TYPE_COLOR = {
+  recruitment: 'bg-primary/10 text-primary',
+  completion: 'bg-[#07d98a]/10 text-[#07d98a]',
+} as const;
 
 export function ProfilePage() {
   const router = useRouter();
-  const { currentUser, crews, myChallenges, isLoading, signOut } = useProfile();
+  const { currentUser, crews, myReels, isLoading, signOut } = useProfile();
 
   const handleSignOut = () => {
     signOut();
@@ -40,7 +37,6 @@ export function ProfilePage() {
 
   return (
     <AppShell className="bg-background">
-      {/* 헤더 */}
       <header className="flex items-center justify-between px-5 py-5 shrink-0">
         <h1 className="text-xl font-bold text-foreground">마이페이지</h1>
         <button
@@ -81,8 +77,8 @@ export function ProfilePage() {
             <p className="text-xs text-muted mt-1">참여 중인 크루</p>
           </div>
           <div className="rounded-2xl bg-surface border border-border p-4 text-center">
-            <p className="text-2xl font-bold text-primary">{myChallenges.length}</p>
-            <p className="text-xs text-muted mt-1">내가 만든 챌린지</p>
+            <p className="text-2xl font-bold text-primary">{myReels.length}</p>
+            <p className="text-xs text-muted mt-1">내 릴스</p>
           </div>
         </div>
 
@@ -99,8 +95,8 @@ export function ProfilePage() {
           ) : (
             crews.map((crew) => (
               <Link
-                key={crew.crew_id}
-                href={`/crews/${crew.crew_id}`}
+                key={crew.crewId}
+                href={`/crews/${crew.crewId}`}
                 className="flex items-center gap-3 rounded-2xl bg-surface border border-border p-4 hover:border-primary/30 transition-colors active:scale-[0.98]"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
@@ -108,9 +104,9 @@ export function ProfilePage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-foreground truncate text-sm">
-                    {crew.challenge_title}
+                    {crew.challengeTitle}
                   </p>
-                  <p className="text-xs text-muted mt-0.5">{crew.member_count}명의 크루원</p>
+                  <p className="text-xs text-muted mt-0.5">{crew.memberCount}명의 크루원</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-subtle shrink-0" />
               </Link>
@@ -118,65 +114,48 @@ export function ProfilePage() {
           )}
         </section>
 
-        {/* 내가 만든 챌린지 */}
+        {/* 내 릴스 이력 */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">내가 만든 챌린지</h2>
-            <Link
-              href="/challenges/new"
-              className="text-xs text-primary font-medium hover:underline"
-            >
+            <h2 className="text-sm font-semibold text-foreground">내 릴스 이력</h2>
+            <Link href="/challenges/new" className="text-xs text-primary font-medium hover:underline">
               + 새 챌린지
             </Link>
           </div>
-          {myChallenges.length === 0 ? (
+          {myReels.length === 0 ? (
             <div className="rounded-2xl bg-surface border border-border p-6 text-center">
-              <p className="text-sm text-muted">아직 만든 챌린지가 없어요</p>
+              <p className="text-sm text-muted">아직 올린 릴스가 없어요</p>
             </div>
           ) : (
-            myChallenges.map((ch) => (
-              <div
-                key={ch.id}
-                className="rounded-2xl bg-surface border border-border p-4 space-y-2.5"
-              >
-                <Link href={`/challenges/${ch.id}`} className="block space-y-2.5">
-                  <div className="flex items-start gap-2">
-                    <span
-                      className={cn(
-                        'shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                        CATEGORY_COLOR[ch.category] ?? 'text-white bg-white/10',
-                      )}
-                    >
-                      {ch.category}
-                    </span>
-                    <p className="flex-1 font-semibold text-foreground text-sm leading-snug">
-                      {ch.title}
+            <div className="space-y-3">
+              {myReels.map((reel) => (
+                <Link
+                  key={reel.id}
+                  href={`/challenges/${reel.challengeId}/reels`}
+                  className="flex items-center gap-3 rounded-2xl bg-surface border border-border p-4 hover:border-primary/30 transition-colors active:scale-[0.98]"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface border border-border">
+                    <Play className="h-4 w-4 text-muted" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span
+                        className={cn(
+                          'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                          REEL_TYPE_COLOR[reel.reelType],
+                        )}
+                      >
+                        {REEL_TYPE_LABEL[reel.reelType]}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted">
+                      {reel.participants.map((p) => p.nickname).join(', ')}
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3 text-primary" />
-                      {ch.location_text}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-[#f5a318]" />
-                      {getDeadlineDays(ch.deadline_at)}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3 text-[#07d98a]" />
-                      {ch.current_participants}/{ch.max_participants}명
-                    </span>
-                  </div>
+                  <p className="text-xs text-subtle shrink-0">{formatRelativeTime(reel.createdAt)}</p>
                 </Link>
-                <Link
-                  href={`/challenges/${ch.id}/applicants`}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2 text-xs text-muted hover:border-primary/40 hover:text-primary transition-colors"
-                >
-                  <ClipboardList className="h-3.5 w-3.5" />
-                  신청자 관리
-                </Link>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </section>
 
