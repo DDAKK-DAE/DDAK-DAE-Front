@@ -2,50 +2,56 @@
 
 /* ============================================================
    디자인 토큰 — Tailwind v4 @theme
-   색·폰트·breakpoint·애니메이션만 정의. 공통 속성 설정 지양.
-   스타일 가이드 Section 6 (Utility-first) 준수.
+   메인 컬러 #05a66b 기반 팔레트. 순수 흰/검 사용 금지.
+   보색(H=338°): #e8356e / 삼색(H=38°): #f5a318
    ============================================================ */
 @theme {
-  /* 배경 */
-  --color-background: #0d0d0d;
-  --color-surface:    #1a1a1a;
-  --color-secondary:  #2a2a2a;
+  /* ─── Backgrounds ──────────────────────────────────── */
+  --color-background: #0a0f0c;   /* 그린 틴트 다크 */
+  --color-surface:    #121e17;   /* 카드 / 패널 */
+  --color-elevated:   #1a2d22;   /* 입력창 / 엘리베이션 */
+  --color-secondary:  #1c3028;   /* 보조 버튼 bg */
 
-  /* 텍스트 */
-  --color-foreground:   #ffffff;
-  --color-text-muted:   #aaaaaa;
+  /* ─── Text ─────────────────────────────────────────── */
+  --color-foreground: #e6f2ec;   /* 기본 텍스트 (그린 틴트 오프화이트) */
+  --color-muted:      #6fa68a;   /* 흐린 텍스트 */
+  --color-subtle:     #3a6652;   /* 매우 흐린 텍스트 */
 
-  /* Primary — 틱톡 감성 핑크/레드 */
-  --color-primary:      #f02d5e;
-  --color-primary-glow: rgba(240, 45, 94, 0.4);
-  --color-primary-dark: #c4234d;
+  /* ─── Primary  #05a66b ─────────────────────────────── */
+  --color-primary:       #05a66b;
+  --color-primary-light: #07d98a;
+  --color-primary-dark:  #048055;
 
-  /* 보더 */
-  --color-border: rgba(255, 255, 255, 0.08);
+  /* ─── Accent — 보색 H=338° 핫핑크 ────────────────── */
+  --color-accent: #e8356e;
 
-  /* 상태 */
-  --color-error:   #ff4d4d;
-  --color-success: #4dff91;
-  --color-warning: #ffb830;
+  /* ─── Border ───────────────────────────────────────── */
+  --color-border: rgba(5, 166, 107, 0.15);
 
-  /* 폰트 */
+  /* ─── Status ───────────────────────────────────────── */
+  --color-error:   #e8356e;   /* = accent */
+  --color-success: #07d98a;   /* = primary-light */
+  --color-warning: #f5a318;   /* 삼색 H=38° */
+
+  /* ─── Font ─────────────────────────────────────────── */
   --font-sans: var(--font-noto-sans-kr), var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 
-  /* Breakpoints (모바일 우선) */
+  /* ─── Breakpoints (모바일 우선) ────────────────────── */
   --breakpoint-sm: 375px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
 
-  /* Keyframe 애니메이션 */
-  --animate-fade-in:  fade-in 0.2s ease-out;
-  --animate-slide-up: slide-up 0.3s ease-out;
+  /* ─── Animations ───────────────────────────────────── */
+  --animate-fade-in:  fade-in 0.3s ease-out both;
+  --animate-slide-up: slide-up 0.35s ease-out;
   --animate-scale-in: scale-in 0.2s ease-out;
   --animate-shimmer:  shimmer 1.5s infinite linear;
+  --animate-shake:    shake 0.45s ease-out;
 
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   @keyframes slide-up {
@@ -60,11 +66,17 @@
     from { background-position: -200% 0; }
     to   { background-position:  200% 0; }
   }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-7px); }
+    40%      { transform: translateX(7px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
 }
 
 /* ============================================================
-   Safe-area 토큰 (모바일 노치 대응 — CSS env() 변수)
-   @theme에서 env()를 직접 참조할 수 없어 :root에 별도 선언.
+   Safe-area (모바일 노치 대응)
    ============================================================ */
 :root {
   --safe-area-top:    env(safe-area-inset-top, 0px);
@@ -72,7 +84,7 @@
 }
 
 /* ============================================================
-   body 배경 — 피드 앱 특성상 다크 배경을 전역 1회 설정.
+   body — 피드 앱 특성상 다크 배경 전역 1회
    ============================================================ */
 body {
   background-color: var(--color-background);
