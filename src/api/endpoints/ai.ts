@@ -1,4 +1,5 @@
-import { aiApiClient } from '../client';
+import { aiApiClient, apiClient } from '../client';
+import type { ApiResponse } from '@/shared/types/api';
 
 // ── generate-description ─────────────────────────────────────────────────────
 
@@ -54,15 +55,17 @@ export interface AnalyzeGroupChemistryResponse {
   comment: string;
 }
 
-/** POST /ai/chemistry */
+/** POST /ai/chemistry — Spring Boot 경유 */
 export async function analyzeGroupChemistryApi(
   request: AnalyzeGroupChemistryRequest,
 ): Promise<AnalyzeGroupChemistryResponse> {
-  const { data } = await aiApiClient.post<AnalyzeGroupChemistryResponse>(
+  const response = await apiClient.post<ApiResponse<AnalyzeGroupChemistryResponse>>(
     '/ai/chemistry',
     request,
   );
-  return data;
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }
 
 // ── crew-recommendation ──────────────────────────────────────────────────────
@@ -92,13 +95,15 @@ export interface GetCrewRecommendationsResponse {
   recommendations: CrewRecommendation[];
 }
 
-/** POST /ai/crew-recommendation */
+/** POST /ai/crew-recommendation — Spring Boot 경유 */
 export async function getCrewRecommendationsApi(
   request: GetCrewRecommendationsRequest,
 ): Promise<GetCrewRecommendationsResponse> {
-  const { data } = await aiApiClient.post<GetCrewRecommendationsResponse>(
+  const response = await apiClient.post<ApiResponse<GetCrewRecommendationsResponse>>(
     '/ai/crew-recommendation',
     request,
   );
-  return data;
+  const result = response.data;
+  if (!result.success) throw new Error(result.message);
+  return result.data;
 }

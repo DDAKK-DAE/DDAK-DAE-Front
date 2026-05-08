@@ -74,39 +74,41 @@ function ApplicantCard({
         </div>
       )}
 
-      {status === PARTICIPATION_STATUS.PENDING && (
-        <div className="flex gap-2 pt-1">
-          <button
-            onClick={() => onAnalyze(applicant)}
-            disabled={isAnalyzing}
-            className="flex items-center gap-1 rounded-xl border border-border px-2.5 py-2 text-xs text-muted hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50 shrink-0"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            {isAnalyzing ? '분석 중...' : 'AI 케미'}
-          </button>
-          <button
-            onClick={() => onReject(participationId)}
-            disabled={isActing}
-            className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-2 text-sm text-muted hover:border-red-400/50 hover:text-red-400 transition-colors disabled:opacity-50"
-          >
-            <XCircle className="h-4 w-4" />
-            거절
-          </button>
-          <Button onClick={() => onAccept(participationId)} disabled={isActing} className="flex-1">
-            {isActing ? (
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 animate-spin" />
-                처리 중
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4" />
-                수락
-              </span>
-            )}
-          </Button>
-        </div>
-      )}
+      <div className="flex gap-2 pt-1">
+        <button
+          onClick={() => onAnalyze(applicant)}
+          disabled={isAnalyzing}
+          className="flex items-center gap-1 rounded-xl border border-border px-2.5 py-2 text-xs text-muted hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50 shrink-0"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          {isAnalyzing ? '분석 중...' : 'AI 케미'}
+        </button>
+        {status === PARTICIPATION_STATUS.PENDING && (
+          <>
+            <button
+              onClick={() => onReject(participationId)}
+              disabled={isActing}
+              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-2 text-sm text-muted hover:border-red-400/50 hover:text-red-400 transition-colors disabled:opacity-50"
+            >
+              <XCircle className="h-4 w-4" />
+              거절
+            </button>
+            <Button onClick={() => onAccept(participationId)} disabled={isActing} className="flex-1">
+              {isActing ? (
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 animate-spin" />
+                  처리 중
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4" />
+                  수락
+                </span>
+              )}
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
