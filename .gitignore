@@ -30,8 +30,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — .local은 올리지 않음, .env.production은 Vercel 빌드용으로 커밋
+.env*.local
 
 # vercel
 .vercel
