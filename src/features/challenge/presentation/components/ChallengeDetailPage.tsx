@@ -79,16 +79,22 @@ export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
 
       <div className="flex-1 overflow-y-auto pb-32">
         {/* Reel preview area */}
-        <div className="relative flex h-56 w-full items-center justify-center bg-gradient-to-b from-[#031a0f] to-[#052e1c]">
+        <button
+          onClick={() => router.push(`/challenges/${challengeId}/reels`)}
+          className="relative flex h-56 w-full items-center justify-center bg-gradient-to-b from-[#031a0f] to-[#052e1c] active:brightness-90 transition-all"
+        >
           <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm">
             <Play className="ml-1 h-8 w-8 fill-white/80 text-white/80" />
           </div>
+          <span className="absolute bottom-3 left-4 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
+            탭하여 릴스 보기
+          </span>
           {challenge.recruitment_reels.length > 0 && (
             <span className="absolute bottom-3 right-4 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
               모집 릴스 {challenge.recruitment_reels.length}개
             </span>
           )}
-        </div>
+        </button>
 
         <div className="px-5 pt-5 space-y-5">
           {/* Category + title */}

@@ -2,7 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from 'react';
 
-import { Eye, EyeOff, Loader2, Lock, Mail, User, Leaf, Calendar, ChevronDown, ChevronLeft } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Lock, Mail, User, Leaf, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { useSignup } from '@/features/auth/application/hooks/useSignup';
@@ -17,6 +17,7 @@ import type {
 } from '@/features/auth/presentation/types/AuthFormTypes';
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
+import { Select } from '@/shared/components/ui/Select';
 import { cn } from '@/shared/utils/cn';
 
 /* ─── Step 1 ────────────────────────────────────────────── */
@@ -139,6 +140,42 @@ function Step1({ values, onChange, onNext }: Step1Props) {
   );
 }
 
+/* ─── BirthdayPicker ────────────────────────────────────── */
+
+function BirthdayPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+  const [y, setY] = useState(value ? value.slice(0, 4) : '');
+  const [m, setM] = useState(value ? value.slice(5, 7).replace(/^0/, '') : '');
+  const [d, setD] = useState(value ? value.slice(8, 10).replace(/^0/, '') : '');
+
+  const daysInMonth = (y && m) ? new Date(Number(y), Number(m), 0).getDate() : 31;
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  useEffect(() => {
+    if (d && daysInMonth < Number(d)) setD('');
+  }, [m, y, daysInMonth, d]);
+
+  useEffect(() => {
+    if (y && m && d) {
+      onChange(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`);
+    } else {
+      onChange('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [y, m, d]);
+
+  return (
+    <div className="flex gap-2">
+      <Select value={y} onChange={setY} placeholder="년도" options={years.map((yr) => ({ value: String(yr), label: `${yr}년` }))} className="flex-[3]" />
+      <Select value={m} onChange={setM} placeholder="월" options={months.map((mo) => ({ value: String(mo), label: `${mo}월` }))} className="flex-[2]" />
+      <Select value={d} onChange={setD} placeholder="일" options={days.map((dy) => ({ value: String(dy), label: `${dy}일` }))} className="flex-[2]" />
+    </div>
+  );
+}
+
 /* ─── Step 2 ────────────────────────────────────────────── */
 
 interface Step2Props {
@@ -151,27 +188,6 @@ interface Step2Props {
 }
 
 function Step2({ values, onChange, onBack, onSubmit, isLoading, error }: Step2Props) {
-  // Custom Date Picker Logic
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-
-  const [y, setY] = useState('');
-  const [m, setM] = useState('');
-  const [d, setD] = useState('');
-
-  // Sync custom date state to values.birthday (YYYY-MM-DD)
-  useEffect(() => {
-    if (y && m && d) {
-      const mm = m.padStart(2, '0');
-      const dd = d.padStart(2, '0');
-      onChange({ ...values, birthday: `${y}-${mm}-${dd}` });
-    } else {
-      onChange({ ...values, birthday: '' });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [y, m, d]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -196,53 +212,7 @@ function Step2({ values, onChange, onBack, onSubmit, isLoading, error }: Step2Pr
       {/* Custom Birthday Picker */}
       <div className="animate-slide-up flex flex-col gap-1.5" style={{ animationDelay: '100ms' }}>
         <label className="text-sm font-semibold text-foreground ml-1">생년월일 (선택)</label>
-        <div className="flex gap-2 relative group">
-          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted pointer-events-none transition-colors group-focus-within:text-primary z-10" />
-          
-          <div className="flex flex-1 gap-2 pl-11 h-13 w-full rounded-2xl bg-elevated border border-border shadow-sm focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300">
-            {/* Year */}
-            <div className="relative flex-1">
-              <select 
-                value={y} onChange={(e) => setY(e.target.value)}
-                className="w-full h-full bg-transparent appearance-none text-foreground text-base focus:outline-none pl-2 pr-6 cursor-pointer"
-              >
-                <option value="" disabled className="text-muted">년도</option>
-                {years.map(year => <option key={year} value={year}>{year}년</option>)}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
-            </div>
-
-            {/* Divider */}
-            <div className="w-[1px] h-6 bg-border my-auto" />
-
-            {/* Month */}
-            <div className="relative flex-1">
-              <select 
-                value={m} onChange={(e) => setM(e.target.value)}
-                className="w-full h-full bg-transparent appearance-none text-foreground text-base focus:outline-none pl-2 pr-6 cursor-pointer"
-              >
-                <option value="" disabled className="text-muted">월</option>
-                {months.map(month => <option key={month} value={month}>{month}월</option>)}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
-            </div>
-
-            {/* Divider */}
-            <div className="w-[1px] h-6 bg-border my-auto" />
-
-            {/* Day */}
-            <div className="relative flex-1">
-              <select 
-                value={d} onChange={(e) => setD(e.target.value)}
-                className="w-full h-full bg-transparent appearance-none text-foreground text-base focus:outline-none pl-2 pr-6 cursor-pointer"
-              >
-                <option value="" disabled className="text-muted">일</option>
-                {days.map(day => <option key={day} value={day}>{day}일</option>)}
-              </select>
-              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
-            </div>
-          </div>
-        </div>
+        <BirthdayPicker value={values.birthday} onChange={(v) => onChange({ ...values, birthday: v })} />
       </div>
 
       <div className="flex gap-4">
