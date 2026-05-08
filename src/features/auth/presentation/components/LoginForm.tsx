@@ -2,6 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from 'react';
 
+import { Eye, EyeOff, Loader2, Lock, Mail, Leaf } from 'lucide-react';
 import Link from 'next/link';
 
 import { useLogin } from '@/features/auth/application/hooks/useLogin';
@@ -9,49 +10,6 @@ import { validateEmail, validatePassword } from '@/features/auth/domain/services
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
 import { cn } from '@/shared/utils/cn';
-
-function EnvelopeIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m2 7 10 6 10-6" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
-
-function EyeIcon({ off }: { off?: boolean }) {
-  if (off) {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-        <line x1="2" y1="2" x2="22" y2="22" />
-      </svg>
-    );
-  }
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function SpinnerIcon() {
-  return (
-    <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-}
 
 export function LoginForm() {
   const { handleLogin, isLoading, error, clearError } = useLogin();
@@ -63,9 +21,11 @@ export function LoginForm() {
   const [touched, setTouched] = useState({ email: false, password: false });
   const [shaking, setShaking] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (error) setShaking(true);
   }, [error]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const emailError =
     (touched.email || hasSubmitted) && !validateEmail(email)
@@ -89,45 +49,55 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md">
-      {/* Logo */}
-      <div className="mb-10 text-center animate-fade-in">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 mb-4">
-          <span className="text-3xl">🎬</span>
+    <div className="w-full max-w-md relative z-10">
+      {/* Decorative background blobs for light theme */}
+      <div className="absolute top-[-150px] left-[-100px] w-72 h-72 bg-primary/20 rounded-full blur-[80px] -z-10 animate-float" />
+      <div className="absolute bottom-[-100px] right-[-100px] w-64 h-64 bg-accent/15 rounded-full blur-[80px] -z-10 animate-float" style={{ animationDelay: '2s' }} />
+
+      {/* Logo Area */}
+      <div className="mb-10 text-center animate-slide-up">
+        <div className="mx-auto mb-5 relative w-16 h-16 flex items-center justify-center">
+          <div className="absolute inset-0 bg-primary/20 rounded-2xl rotate-6 animate-float" />
+          <div className="absolute inset-0 bg-accent/10 rounded-2xl -rotate-6 animate-float" style={{ animationDelay: '1s' }} />
+          <div className="relative bg-surface rounded-2xl w-full h-full flex items-center justify-center shadow-sm border border-border">
+            <Leaf className="w-8 h-8 text-primary" strokeWidth={2.5} />
+          </div>
         </div>
-        <h1 className="text-3xl font-bold text-primary tracking-tight">딱대</h1>
-        <p className="mt-1.5 text-sm text-muted">챌린지 크루를 찾아보세요</p>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">딱대</h1>
+        <p className="mt-2 text-[15px] text-muted">함께 모여 만드는 우리만의 숏폼</p>
       </div>
 
-      {/* Card with gradient border */}
-      <div className="p-px rounded-3xl bg-gradient-to-br from-primary/30 via-transparent to-accent/15">
+      {/* Card with dynamic moving gradient border */}
+      <div className="relative group">
+        <div className="absolute -inset-[2px] rounded-3xl bg-[linear-gradient(45deg,var(--color-primary),var(--color-accent),var(--color-warning),var(--color-primary))] bg-[length:400%_400%] animate-gradient-xy opacity-20 group-hover:opacity-30 transition-opacity duration-500 rounded-3xl blur-[2px]" />
+        
         <div
           className={cn(
-            'rounded-3xl bg-surface/80 backdrop-blur-2xl p-8',
+            'relative rounded-[22px] bg-surface/90 backdrop-blur-xl p-8 sm:p-10 shadow-xl shadow-primary/5 border border-border',
             shaking && 'animate-shake',
           )}
           onAnimationEnd={() => setShaking(false)}
         >
-          <h2 className="mb-7 text-xl font-semibold text-foreground">로그인</h2>
+          <h2 className="mb-8 text-2xl font-bold text-foreground tracking-tight">로그인</h2>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
             {/* Email */}
-            <div className="animate-fade-in" style={{ animationDelay: '60ms' }}>
+            <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
               <Input
                 type="email"
-                placeholder="이메일"
+                placeholder="이메일 주소"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); clearError(); }}
                 onBlur={() => handleBlur('email')}
                 error={emailError ?? undefined}
-                leftIcon={<EnvelopeIcon />}
+                leftIcon={<Mail className="w-5 h-5" />}
                 autoComplete="email"
                 autoFocus
               />
             </div>
 
             {/* Password */}
-            <div className="animate-fade-in" style={{ animationDelay: '120ms' }}>
+            <div className="animate-slide-up" style={{ animationDelay: '150ms' }}>
               <Input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="비밀번호"
@@ -135,16 +105,16 @@ export function LoginForm() {
                 onChange={(e) => { setPassword(e.target.value); clearError(); }}
                 onBlur={() => handleBlur('password')}
                 error={passwordError ?? undefined}
-                leftIcon={<LockIcon />}
+                leftIcon={<Lock className="w-5 h-5" />}
                 rightElement={
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="text-muted hover:text-foreground transition-colors"
+                    className="text-muted hover:text-primary transition-colors p-1"
                     aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
                     tabIndex={-1}
                   >
-                    <EyeIcon off={showPassword} />
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 }
                 autoComplete="current-password"
@@ -153,17 +123,17 @@ export function LoginForm() {
 
             {/* API Error */}
             {error && (
-              <p className="animate-fade-in rounded-xl bg-error/10 border border-error/20 px-4 py-2.5 text-sm text-error text-center">
+              <p className="animate-fade-in rounded-2xl bg-error/10 border border-error/20 px-4 py-3 text-[14px] font-medium text-error text-center mt-1">
                 {error}
               </p>
             )}
 
             {/* Submit */}
-            <div className="animate-fade-in mt-2" style={{ animationDelay: '180ms' }}>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+            <div className="animate-slide-up mt-4" style={{ animationDelay: '200ms' }}>
+              <Button type="submit" className="w-full h-13 rounded-2xl text-[16px] font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all duration-300" disabled={isLoading}>
                 {isLoading ? (
                   <span className="flex items-center gap-2">
-                    <SpinnerIcon />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     로그인 중...
                   </span>
                 ) : (
@@ -173,15 +143,15 @@ export function LoginForm() {
             </div>
           </form>
 
-          <p className="mt-6 text-center text-sm text-muted">
-            계정이 없으신가요?{' '}
+          <div className="mt-8 pt-6 border-t border-border flex items-center justify-center gap-2 text-[15px]">
+            <span className="text-muted">계정이 없으신가요?</span>
             <Link
               href="/signup"
-              className="font-medium text-primary hover:text-primary-light transition-colors"
+              className="font-bold text-primary hover:text-primary-dark transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-full after:h-[2px] after:bg-primary/30 after:transition-all hover:after:bg-primary"
             >
-              회원가입
+              크루 합류하기
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>

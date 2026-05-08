@@ -15,39 +15,40 @@ export function Input({ label, error, leftIcon, rightElement, className, id, ...
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-foreground">
+        <label htmlFor={id} className="text-sm font-semibold text-foreground ml-1">
           {label}
         </label>
       )}
       <div className="relative group">
         {leftIcon && (
-          <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted transition-colors group-focus-within:text-primary">
+          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted transition-colors group-focus-within:text-primary">
             {leftIcon}
           </span>
         )}
         <input
           id={id}
           className={cn(
-            'h-12 w-full rounded-xl bg-elevated text-foreground',
+            'h-13 w-full rounded-2xl bg-elevated text-foreground text-base shadow-sm',
             'border border-border placeholder:text-subtle',
-            'focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20',
-            'transition-all duration-200',
-            leftIcon ? 'pl-11' : 'pl-4',
-            rightElement ? 'pr-11' : 'pr-4',
-            error && 'border-error/50 focus:border-error focus:ring-error/15',
+            'focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10',
+            'transition-all duration-300 ease-out hover:border-primary/50',
+            leftIcon ? 'pl-12' : 'pl-4',
+            rightElement ? 'pr-12' : 'pr-4',
+            error && 'border-error/60 focus:border-error focus:ring-error/15 shadow-error/5',
             className,
           )}
           {...props}
         />
         {rightElement && (
-          <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2">
             {rightElement}
           </span>
         )}
       </div>
       {error && (
-        <p className="animate-fade-in text-sm text-error">{error}</p>
+        <p className="animate-slide-up text-[13px] font-medium text-error ml-1 mt-0.5">{error}</p>
       )}
     </div>
   );
 }
+

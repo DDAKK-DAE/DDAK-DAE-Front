@@ -2,6 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from 'react';
 
+import { Eye, EyeOff, Loader2, Lock, Mail, User, Leaf, Calendar, ChevronDown, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
 import { useSignup } from '@/features/auth/application/hooks/useSignup';
@@ -17,56 +18,6 @@ import type {
 import { Button } from '@/shared/components/ui/Button';
 import { Input } from '@/shared/components/ui/Input';
 import { cn } from '@/shared/utils/cn';
-
-/* ─── Icon helpers ─────────────────────────────────────── */
-
-function EnvelopeIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m2 7 10 6 10-6" />
-    </svg>
-  );
-}
-function LockIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-}
-function UserIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-    </svg>
-  );
-}
-function EyeIcon({ off }: { off?: boolean }) {
-  if (off) {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-        <line x1="2" y1="2" x2="22" y2="22" />
-      </svg>
-    );
-  }
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-function SpinnerIcon() {
-  return (
-    <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-  );
-}
 
 /* ─── Step 1 ────────────────────────────────────────────── */
 
@@ -106,22 +57,22 @@ function Step1({ values, onChange, onNext }: Step1Props) {
     setTouched((prev) => ({ ...prev, [field]: true }));
 
   return (
-    <form onSubmit={handleNext} className="flex flex-col gap-4" noValidate>
-      <div className="animate-fade-in" style={{ animationDelay: '60ms' }}>
+    <form onSubmit={handleNext} className="flex flex-col gap-5" noValidate>
+      <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
         <Input
           type="email"
-          placeholder="이메일"
+          placeholder="이메일 주소"
           value={values.email}
           onChange={(e) => onChange({ ...values, email: e.target.value })}
           onBlur={() => touch('email')}
           error={errors.email ?? undefined}
-          leftIcon={<EnvelopeIcon />}
+          leftIcon={<Mail className="w-5 h-5" />}
           autoComplete="email"
           autoFocus
         />
       </div>
 
-      <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+      <div className="animate-slide-up" style={{ animationDelay: '140ms' }}>
         <Input
           type={showPassword ? 'text' : 'password'}
           placeholder="비밀번호 (8자 이상)"
@@ -129,21 +80,21 @@ function Step1({ values, onChange, onNext }: Step1Props) {
           onChange={(e) => onChange({ ...values, password: e.target.value })}
           onBlur={() => touch('password')}
           error={errors.password ?? undefined}
-          leftIcon={<LockIcon />}
+          leftIcon={<Lock className="w-5 h-5" />}
           rightElement={
             <button type="button" tabIndex={-1}
               onClick={() => setShowPassword((p) => !p)}
-              className="text-muted hover:text-foreground transition-colors"
+              className="text-muted hover:text-primary transition-colors p-1"
               aria-label={showPassword ? '숨기기' : '보기'}
             >
-              <EyeIcon off={showPassword} />
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           }
           autoComplete="new-password"
         />
       </div>
 
-      <div className="animate-fade-in" style={{ animationDelay: '140ms' }}>
+      <div className="animate-slide-up" style={{ animationDelay: '180ms' }}>
         <Input
           type={showConfirm ? 'text' : 'password'}
           placeholder="비밀번호 확인"
@@ -151,36 +102,38 @@ function Step1({ values, onChange, onNext }: Step1Props) {
           onChange={(e) => onChange({ ...values, passwordConfirm: e.target.value })}
           onBlur={() => touch('passwordConfirm')}
           error={errors.passwordConfirm ?? undefined}
-          leftIcon={<LockIcon />}
+          leftIcon={<Lock className="w-5 h-5" />}
           rightElement={
             <button type="button" tabIndex={-1}
               onClick={() => setShowConfirm((p) => !p)}
-              className="text-muted hover:text-foreground transition-colors"
+              className="text-muted hover:text-primary transition-colors p-1"
               aria-label={showConfirm ? '숨기기' : '보기'}
             >
-              <EyeIcon off={showConfirm} />
+              {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           }
           autoComplete="new-password"
         />
       </div>
 
-      <div className="animate-fade-in" style={{ animationDelay: '180ms' }}>
+      <div className="animate-slide-up" style={{ animationDelay: '220ms' }}>
         <Input
           type="text"
-          placeholder="닉네임"
+          placeholder="활동할 닉네임"
           value={values.nickname}
           onChange={(e) => onChange({ ...values, nickname: e.target.value })}
           onBlur={() => touch('nickname')}
           error={errors.nickname ?? undefined}
-          leftIcon={<UserIcon />}
+          leftIcon={<User className="w-5 h-5" />}
           autoComplete="nickname"
           maxLength={50}
         />
       </div>
 
-      <div className="animate-fade-in mt-2" style={{ animationDelay: '220ms' }}>
-        <Button type="submit" className="w-full">다음</Button>
+      <div className="animate-slide-up mt-2" style={{ animationDelay: '260ms' }}>
+        <Button type="submit" className="w-full h-13 rounded-2xl text-[16px] font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all duration-300">
+          다음 단계로
+        </Button>
       </div>
     </form>
   );
@@ -198,16 +151,41 @@ interface Step2Props {
 }
 
 function Step2({ values, onChange, onBack, onSubmit, isLoading, error }: Step2Props) {
-  return (
-    <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted animate-fade-in">
-        아래 정보는 모두 선택이에요. 나중에 프로필에서도 수정할 수 있어요.
-      </p>
+  // Custom Date Picker Logic
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
 
-      <div className="animate-fade-in" style={{ animationDelay: '60ms' }}>
+  const [y, setY] = useState('');
+  const [m, setM] = useState('');
+  const [d, setD] = useState('');
+
+  // Sync custom date state to values.birthday (YYYY-MM-DD)
+  useEffect(() => {
+    if (y && m && d) {
+      const mm = m.padStart(2, '0');
+      const dd = d.padStart(2, '0');
+      onChange({ ...values, birthday: `${y}-${mm}-${dd}` });
+    } else {
+      onChange({ ...values, birthday: '' });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [y, m, d]);
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 animate-slide-up mb-2">
+        <p className="text-[14px] text-primary-dark font-medium leading-relaxed">
+          프로필을 더 풍부하게 채워보세요.<br/>
+          이 단계의 정보는 모두 <strong className="font-bold">선택 사항</strong>이에요.
+        </p>
+      </div>
+
+      <div className="animate-slide-up" style={{ animationDelay: '60ms' }}>
         <Input
           type="text"
-          placeholder="이름 (선택)"
+          placeholder="본명 (선택)"
           value={values.name}
           onChange={(e) => onChange({ ...values, name: e.target.value })}
           autoComplete="name"
@@ -215,55 +193,106 @@ function Step2({ values, onChange, onBack, onSubmit, isLoading, error }: Step2Pr
         />
       </div>
 
-      <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-        <Input
-          type="date"
-          placeholder="생년월일 (선택)"
-          value={values.birthday}
-          onChange={(e) => onChange({ ...values, birthday: e.target.value })}
-          autoComplete="bday"
-        />
+      {/* Custom Birthday Picker */}
+      <div className="animate-slide-up flex flex-col gap-1.5" style={{ animationDelay: '100ms' }}>
+        <label className="text-sm font-semibold text-foreground ml-1">생년월일 (선택)</label>
+        <div className="flex gap-2 relative group">
+          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted pointer-events-none transition-colors group-focus-within:text-primary z-10" />
+          
+          <div className="flex flex-1 gap-2 pl-11 h-13 w-full rounded-2xl bg-elevated border border-border shadow-sm focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all duration-300">
+            {/* Year */}
+            <div className="relative flex-1">
+              <select 
+                value={y} onChange={(e) => setY(e.target.value)}
+                className="w-full h-full bg-transparent appearance-none text-foreground text-base focus:outline-none pl-2 pr-6 cursor-pointer"
+              >
+                <option value="" disabled className="text-muted">년도</option>
+                {years.map(year => <option key={year} value={year}>{year}년</option>)}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+            </div>
+
+            {/* Divider */}
+            <div className="w-[1px] h-6 bg-border my-auto" />
+
+            {/* Month */}
+            <div className="relative flex-1">
+              <select 
+                value={m} onChange={(e) => setM(e.target.value)}
+                className="w-full h-full bg-transparent appearance-none text-foreground text-base focus:outline-none pl-2 pr-6 cursor-pointer"
+              >
+                <option value="" disabled className="text-muted">월</option>
+                {months.map(month => <option key={month} value={month}>{month}월</option>)}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+            </div>
+
+            {/* Divider */}
+            <div className="w-[1px] h-6 bg-border my-auto" />
+
+            {/* Day */}
+            <div className="relative flex-1">
+              <select 
+                value={d} onChange={(e) => setD(e.target.value)}
+                className="w-full h-full bg-transparent appearance-none text-foreground text-base focus:outline-none pl-2 pr-6 cursor-pointer"
+              >
+                <option value="" disabled className="text-muted">일</option>
+                {days.map(day => <option key={day} value={day}>{day}일</option>)}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="animate-fade-in" style={{ animationDelay: '140ms' }}>
-        <Input
-          type="number"
-          placeholder="나이 (선택)"
-          value={values.age}
-          onChange={(e) => onChange({ ...values, age: e.target.value })}
-          min={0}
-          max={150}
-        />
-      </div>
+      <div className="flex gap-4">
+        <div className="flex-1 animate-slide-up" style={{ animationDelay: '140ms' }}>
+          <Input
+            type="number"
+            placeholder="나이 (선택)"
+            value={values.age}
+            onChange={(e) => onChange({ ...values, age: e.target.value })}
+            min={0}
+            max={150}
+          />
+        </div>
 
-      <div className="animate-fade-in" style={{ animationDelay: '180ms' }}>
-        <Input
-          type="text"
-          placeholder="직업 (선택)"
-          value={values.job}
-          onChange={(e) => onChange({ ...values, job: e.target.value })}
-          maxLength={50}
-        />
+        <div className="flex-[2] animate-slide-up" style={{ animationDelay: '180ms' }}>
+          <Input
+            type="text"
+            placeholder="직업 (선택)"
+            value={values.job}
+            onChange={(e) => onChange({ ...values, job: e.target.value })}
+            maxLength={50}
+          />
+        </div>
       </div>
 
       {error && (
-        <p className="animate-fade-in rounded-xl bg-error/10 border border-error/20 px-4 py-2.5 text-sm text-error text-center">
+        <p className="animate-fade-in rounded-2xl bg-error/10 border border-error/20 px-4 py-3 text-[14px] font-medium text-error text-center mt-1">
           {error}
         </p>
       )}
 
-      <div className="animate-fade-in flex gap-3 mt-2" style={{ animationDelay: '220ms' }}>
-        <Button variant="secondary" onClick={onBack} className="flex-1" type="button" disabled={isLoading}>
-          이전
+      <div className="animate-slide-up flex gap-3 mt-4" style={{ animationDelay: '220ms' }}>
+        <Button 
+          variant="secondary" 
+          onClick={onBack} 
+          className="flex-none w-16 h-13 rounded-2xl shadow-sm hover:shadow-md transition-all p-0 flex items-center justify-center bg-secondary text-foreground hover:bg-secondary/80 border border-border" 
+          type="button" 
+          disabled={isLoading}
+          aria-label="이전 단계로"
+        >
+          <ChevronLeft className="w-6 h-6" />
         </Button>
-        <Button onClick={onSubmit} className="flex-1" type="button" disabled={isLoading}>
+        <Button onClick={onSubmit} className="flex-1 h-13 rounded-2xl text-[16px] font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all duration-300" type="button" disabled={isLoading}>
           {isLoading ? (
             <span className="flex items-center gap-2">
-              <SpinnerIcon />
-              처리 중...
+              <Loader2 className="w-5 h-5 animate-spin" />
+              크루 합류 준비 중...
             </span>
           ) : (
-            '완성'
+            '딱대 시작하기'
           )}
         </Button>
       </div>
@@ -272,9 +301,9 @@ function Step2({ values, onChange, onBack, onSubmit, isLoading, error }: Step2Pr
         type="button"
         onClick={onSubmit}
         disabled={isLoading}
-        className="text-sm text-muted hover:text-foreground transition-colors text-center disabled:opacity-40"
+        className="text-[14px] font-medium text-muted hover:text-primary transition-colors text-center disabled:opacity-40 mt-2"
       >
-        건너뛰기
+        이 단계 건너뛰기
       </button>
     </div>
   );
@@ -301,9 +330,11 @@ export function SignupForm() {
     job: '',
   });
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (error) setShaking(true);
   }, [error]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const goToStep2 = () => {
     clearError();
@@ -328,69 +359,82 @@ export function SignupForm() {
   };
 
   return (
-    <div className="w-full max-w-md">
-      {/* Logo */}
-      <div className="mb-10 text-center animate-fade-in">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 mb-4">
-          <span className="text-3xl">🎬</span>
+    <div className="w-full max-w-md relative z-10">
+      {/* Decorative background blobs for light theme */}
+      <div className="absolute top-[-150px] right-[-100px] w-72 h-72 bg-accent/20 rounded-full blur-[80px] -z-10 animate-float" />
+      <div className="absolute bottom-[-100px] left-[-100px] w-64 h-64 bg-primary/15 rounded-full blur-[80px] -z-10 animate-float" style={{ animationDelay: '2s' }} />
+
+      {/* Logo Area */}
+      <div className="mb-10 text-center animate-slide-up">
+        <div className="mx-auto mb-5 relative w-16 h-16 flex items-center justify-center">
+          <div className="absolute inset-0 bg-primary/20 rounded-2xl rotate-6 animate-float" />
+          <div className="absolute inset-0 bg-accent/10 rounded-2xl -rotate-6 animate-float" style={{ animationDelay: '1s' }} />
+          <div className="relative bg-surface rounded-2xl w-full h-full flex items-center justify-center shadow-sm border border-border">
+            <Leaf className="w-8 h-8 text-primary" strokeWidth={2.5} />
+          </div>
         </div>
-        <h1 className="text-3xl font-bold text-primary tracking-tight">딱대</h1>
-        <p className="mt-1.5 text-sm text-muted">함께 찍을 크루를 만들어보세요</p>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">계정 만들기</h1>
+        <p className="mt-2 text-[15px] text-muted">딱대와 함께 새로운 모임을 시작하세요</p>
       </div>
 
-      {/* Card */}
-      <div className="p-px rounded-3xl bg-gradient-to-br from-primary/30 via-transparent to-accent/15">
+      {/* Card with dynamic moving gradient border */}
+      <div className="relative group">
+        <div className="absolute -inset-[2px] rounded-3xl bg-[linear-gradient(45deg,var(--color-primary),var(--color-accent),var(--color-warning),var(--color-primary))] bg-[length:400%_400%] animate-gradient-xy opacity-20 group-hover:opacity-30 transition-opacity duration-500 rounded-3xl blur-[2px]" />
+        
         <div
           className={cn(
-            'rounded-3xl bg-surface/80 backdrop-blur-2xl p-8',
+            'relative rounded-[22px] bg-surface/90 backdrop-blur-xl p-8 sm:p-10 shadow-xl shadow-primary/5 border border-border transition-all duration-300',
             shaking && 'animate-shake',
           )}
           onAnimationEnd={() => setShaking(false)}
         >
           {/* Header + Step indicator */}
-          <div className="mb-7">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-semibold text-foreground">
-                {step === 1 ? '계정 만들기' : '조금 더 알아볼게요'}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-foreground tracking-tight">
+                {step === 1 ? '기본 정보 입력' : '추가 프로필'}
               </h2>
-              <span className="text-xs text-muted">{step} / 2</span>
+              <span className="text-sm font-semibold text-muted bg-secondary px-3 py-1 rounded-full">{step} / 2</span>
             </div>
             <div className="flex gap-2">
-              <div className="h-1 flex-1 rounded-full bg-primary transition-all duration-500" />
-              <div className={cn('h-1 flex-1 rounded-full transition-all duration-500', step === 2 ? 'bg-primary' : 'bg-border')} />
+              <div className="h-1.5 flex-1 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary-light)] transition-all duration-500" />
+              <div className={cn('h-1.5 flex-1 rounded-full transition-all duration-500', step === 2 ? 'bg-primary shadow-[0_0_8px_var(--color-primary-light)]' : 'bg-border')} />
             </div>
           </div>
 
           {/* Steps */}
-          {step === 1 && (
-            <Step1
-              key="step1"
-              values={step1Values}
-              onChange={setStep1Values}
-              onNext={goToStep2}
-            />
-          )}
-          {step === 2 && (
-            <Step2
-              key="step2"
-              values={step2Values}
-              onChange={setStep2Values}
-              onBack={goToStep1}
-              onSubmit={submitSignup}
-              isLoading={isLoading}
-              error={error}
-            />
-          )}
+          <div className="overflow-hidden relative">
+            {/* Wrap in a container to allow smooth transitions if needed, though simple unmount is used here */}
+            {step === 1 && (
+              <Step1
+                key="step1"
+                values={step1Values}
+                onChange={setStep1Values}
+                onNext={goToStep2}
+              />
+            )}
+            {step === 2 && (
+              <Step2
+                key="step2"
+                values={step2Values}
+                onChange={setStep2Values}
+                onBack={goToStep1}
+                onSubmit={submitSignup}
+                isLoading={isLoading}
+                error={error}
+              />
+            )}
+          </div>
 
-          <p className="mt-6 text-center text-sm text-muted">
-            이미 계정이 있으신가요?{' '}
+          <div className="mt-8 pt-6 border-t border-border flex items-center justify-center gap-2 text-[15px]">
+            <span className="text-muted">이미 계정이 있으신가요?</span>
             <Link
               href="/login"
-              className="font-medium text-primary hover:text-primary-light transition-colors"
+              className="font-bold text-primary hover:text-primary-dark transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-full after:h-[2px] after:bg-primary/30 after:transition-all hover:after:bg-primary"
             >
-              로그인
+              로그인하기
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>
