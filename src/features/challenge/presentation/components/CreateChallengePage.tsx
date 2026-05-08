@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, X, Minus } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { Button } from '@/shared/components/ui/Button';
+import { DatePicker } from '@/shared/components/ui/DatePicker';
 import { useCreateChallenge } from '../../application/hooks/useCreateChallenge';
 import { cn } from '@/shared/utils/cn';
 
@@ -110,12 +111,10 @@ export function CreateChallengePage() {
           <label className="text-sm font-semibold text-foreground">
             모집 마감일 <span className="text-[#e8356e]">*</span>
           </label>
-          <input
-            type="date"
+          <DatePicker
             value={form.deadline_at}
+            onChange={(v) => updateField('deadline_at', v)}
             min={today}
-            onChange={(e) => updateField('deadline_at', e.target.value)}
-            className={cn(INPUT_BASE, 'appearance-none')}
           />
         </section>
 

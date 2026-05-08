@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Send, Users, Sparkles, Video } from 'lucide-react';
+import { ArrowLeft, Send, Users, Sparkles, Video, Upload } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { useCrewDetail } from '../application/useCrewDetail';
 import { useCrewChat } from '../application/useCrewChat';
@@ -69,6 +69,13 @@ export function CrewDetailPage({ crewId }: CrewDetailPageProps) {
           <h1 className="truncate font-bold text-foreground">{crew.challenge.title}</h1>
           <p className="text-xs text-muted">{crew.members.length}명의 크루원</p>
         </div>
+        <button
+          onClick={() => router.push(`/challenges/${crew.challenge.id}/upload`)}
+          className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-surface hover:border-primary/40 hover:text-primary transition-colors"
+        >
+          <Upload className="h-3.5 w-3.5" />
+          릴스 올리기
+        </button>
       </header>
 
       {/* Tabs */}

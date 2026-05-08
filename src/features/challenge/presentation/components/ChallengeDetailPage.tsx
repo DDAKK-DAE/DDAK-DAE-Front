@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, MapPin, Clock, Users, Play, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, Users, Play, CheckCircle2, ClipboardList } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { Button } from '@/shared/components/ui/Button';
 import { useChallengeDetail } from '../../application/hooks/useChallengeDetail';
 import { isChallengeJoinable, getRemainingSlots } from '../../domain/services/challengeRules';
+import { useAuth } from '@/features/auth/application/store/AuthContext';
 import { cn } from '@/shared/utils/cn';
 
 const CATEGORY_BADGE: Record<string, string> = {
@@ -30,6 +31,7 @@ interface ChallengeDetailPageProps {
 
 export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
   const router = useRouter();
+  const { currentUser } = useAuth();
   const { challenge, isLoading, isApplying, applySuccess, applyError, applyChallenge } =
     useChallengeDetail(challengeId);
   const [introMessage, setIntroMessage] = useState('');
@@ -47,6 +49,7 @@ export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
   const remaining = getRemainingSlots(challenge);
   const badgeClass = CATEGORY_BADGE[challenge.category] ?? 'border-white/30 text-white/70 bg-white/10';
   const filledSlots = challenge.current_participants;
+  const isHost = currentUser?.id === challenge.host.id;
 
   const handleApply = async () => {
     await applyChallenge(introMessage.trim() || undefined);
@@ -63,20 +66,35 @@ export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
           <ArrowLeft className="h-5 w-5 text-foreground" />
         </button>
         <h1 className="flex-1 truncate font-bold text-foreground">챌린지 상세</h1>
+        {isHost && (
+          <button
+            onClick={() => router.push(`/challenges/${challengeId}/applicants`)}
+            className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs text-foreground hover:bg-surface transition-colors"
+          >
+            <ClipboardList className="h-4 w-4 text-primary" />
+            신청자 보기
+          </button>
+        )}
       </header>
 
       <div className="flex-1 overflow-y-auto pb-32">
         {/* Reel preview area */}
-        <div className="relative flex h-56 w-full items-center justify-center bg-gradient-to-b from-[#031a0f] to-[#052e1c]">
+        <button
+          onClick={() => router.push(`/challenges/${challengeId}/reels`)}
+          className="relative flex h-56 w-full items-center justify-center bg-gradient-to-b from-[#031a0f] to-[#052e1c] active:brightness-90 transition-all"
+        >
           <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm">
             <Play className="ml-1 h-8 w-8 fill-white/80 text-white/80" />
           </div>
+          <span className="absolute bottom-3 left-4 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
+            탭하여 릴스 보기
+          </span>
           {challenge.recruitment_reels.length > 0 && (
             <span className="absolute bottom-3 right-4 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
               모집 릴스 {challenge.recruitment_reels.length}개
             </span>
           )}
-        </div>
+        </button>
 
         <div className="px-5 pt-5 space-y-5">
           {/* Category + title */}
