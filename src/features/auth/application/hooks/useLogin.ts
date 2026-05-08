@@ -7,6 +7,10 @@ import { useRouter } from 'next/navigation';
 import { loginApi } from '@/api/endpoints/auth';
 import { useAuth } from '@/features/auth/application/store/AuthContext';
 
+const MOCK_EMAIL = 'test@ddak.com';
+const MOCK_PASSWORD = 'password123';
+const MOCK_TOKEN = 'mock-token';
+
 export function useLogin() {
   const router = useRouter();
   const { signIn } = useAuth();
@@ -17,9 +21,15 @@ export function useLogin() {
     setError(null);
     setIsLoading(true);
     try {
+      // 목 계정 — 백엔드 없이 로컬 테스트용
+      if (email === MOCK_EMAIL && password === MOCK_PASSWORD) {
+        await signIn(MOCK_TOKEN);
+        router.push('/feed');
+        return;
+      }
       const { token } = await loginApi({ email, password });
       await signIn(token);
-      router.push('/');
+      router.push('/feed');
     } catch (err) {
       const apiError =
         err &&

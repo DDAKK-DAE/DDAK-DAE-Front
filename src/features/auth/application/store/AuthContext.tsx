@@ -1,5 +1,3 @@
-// src/features/auth/application/store/AuthContext.tsx
-// 전역 인증 상태 관리 — 스타일 가이드 Section 3 (Global State: Context API)
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
@@ -7,32 +5,24 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { getMeApi } from '@/api/endpoints/auth';
 import type { User } from '@/features/auth/domain/entities/User';
 
-// ==========================================
-// Context 타입 정의
-// ==========================================
+const MOCK_TOKEN = 'mock-token';
+const MOCK_USER: User = {
+  id: 'mock-1',
+  email: 'test@ddak.com',
+  nickname: '딱대유저',
+  bio: '테스트 계정이에요 🎬',
+  job: '개발자',
+};
 
 interface AuthContextValue {
-  /** 현재 로그인한 사용자 (null이면 비로그인) */
   currentUser: User | null;
-  /** 로딩 중 여부 */
   isLoading: boolean;
-  /** 로그인 처리 (토큰 저장 + 사용자 정보 로드) */
   signIn: (token: string) => Promise<void>;
-  /** 로그아웃 처리 */
   signOut: () => void;
-  /** 사용자 정보 새로고침 */
   refreshUser: () => Promise<void>;
 }
 
-// ==========================================
-// Context 생성
-// ==========================================
-
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-// ==========================================
-// Provider
-// ==========================================
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -42,14 +32,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  /** 토큰으로 사용자 정보 로드 */
   const loadUser = useCallback(async () => {
     setIsLoading(true);
     try {
+      const token = localStorage.getItem('accessToken');
+      // 목 토큰이면 API 없이 목 유저 반환
+      if (token === MOCK_TOKEN) {
+        setCurrentUser(MOCK_USER);
+        return;
+      }
       const user = await getMeApi();
       setCurrentUser(user);
     } catch {
-      // 토큰 만료/없음 → 로그아웃 상태
       setCurrentUser(null);
       localStorage.removeItem('accessToken');
     } finally {
@@ -57,8 +51,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  /** 앱 마운트 시 기존 토큰으로 자동 로그인 시도 (localStorage 동기화) */
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -67,7 +59,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
     void loadUser();
   }, [loadUser]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const signIn = useCallback(
     async (token: string) => {
@@ -93,14 +84,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
-// ==========================================
-// Custom Hook
-// ==========================================
-
-/**
- * 인증 상태 접근 훅
- * AuthProvider 외부에서 사용 시 에러
- */
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext);
   if (!context) {

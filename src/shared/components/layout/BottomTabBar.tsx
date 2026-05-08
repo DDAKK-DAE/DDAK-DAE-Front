@@ -12,7 +12,7 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { href: '/',      label: '피드', icon: '🎬' },
+  { href: '/feed',  label: '피드', icon: '🎬' },
   { href: '/crews', label: '크루', icon: '👥' },
   { href: '/me',    label: '마이', icon: '👤' },
 ];
