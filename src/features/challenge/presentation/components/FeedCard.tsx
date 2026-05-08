@@ -12,6 +12,7 @@ import {
 } from '@/features/challenge/domain/services/challengeRules';
 import type { Challenge } from '@/features/challenge/domain/entities/Challenge';
 import { getChallengeReelsApi } from '@/api/endpoints/reels';
+import { useAuth } from '@/features/auth/application/store/AuthContext';
 import { Button } from '@/shared/components/ui/Button';
 import { Modal } from '@/shared/components/ui/Modal';
 import { cn } from '@/shared/utils/cn';
@@ -50,10 +51,12 @@ interface FeedCardProps {
   challenge: Challenge;
   index: number;
   isActive: boolean;
+  reelType?: 'recruitment' | 'completion';
 }
 
-export function FeedCard({ challenge, index, isActive }: FeedCardProps) {
+export function FeedCard({ challenge, index, isActive, reelType }: FeedCardProps) {
   const router = useRouter();
+  const { currentUser } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(() => deterministicCount(challenge.id, 50));
@@ -61,10 +64,10 @@ export function FeedCard({ challenge, index, isActive }: FeedCardProps) {
   const [isMuted, setIsMuted] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
 
-  // 활성화된 카드일 때만 모집 릴스 fetch
+  // 활성화된 카드일 때만 릴스 fetch
   const { data: reelData } = useQuery({
-    queryKey: ['challenge-reels', challenge.id, 'recruitment'],
-    queryFn: () => getChallengeReelsApi(challenge.id, { type: 'recruitment' }),
+    queryKey: ['challenge-reels', challenge.id, reelType],
+    queryFn: () => getChallengeReelsApi(challenge.id, { type: reelType }),
     enabled: isActive,
     staleTime: 5 * 60 * 1000,
   });
@@ -96,6 +99,7 @@ export function FeedCard({ challenge, index, isActive }: FeedCardProps) {
   };
 
   const joinable = isChallengeJoinable(challenge);
+  const isHost = currentUser?.id === challenge.host.id;
   const remaining = getRemainingSlots(challenge);
   const gradient = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
   const badgeClass =
@@ -257,16 +261,18 @@ export function FeedCard({ challenge, index, isActive }: FeedCardProps) {
 
             <button
               onClick={(e) => { e.stopPropagation(); setShowDetail(true); }}
-              disabled={!joinable}
+              disabled={isHost || !joinable}
               className={cn(
                 'ml-auto flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200',
-                joinable
+                isHost
+                  ? 'cursor-default bg-white/10 text-white/40'
+                  : joinable
                   ? 'bg-primary text-white shadow-lg shadow-primary/40 active:scale-95'
                   : 'cursor-not-allowed bg-white/10 text-white/40',
               )}
             >
-              {joinable ? '참여 신청' : '마감'}
-              {joinable && <ChevronRight className="h-4 w-4" />}
+              {isHost ? '내 챌린지' : joinable ? '참여 신청' : '마감'}
+              {!isHost && joinable && <ChevronRight className="h-4 w-4" />}
             </button>
           </div>
         </div>
@@ -326,13 +332,13 @@ export function FeedCard({ challenge, index, isActive }: FeedCardProps) {
           <Button
             className="w-full"
             size="lg"
-            disabled={!joinable}
+            disabled={isHost || !joinable}
             onClick={() => {
               setShowDetail(false);
               router.push(`/challenges/${challenge.id}`);
             }}
           >
-            {joinable ? '참여 신청하기' : '모집 마감'}
+            {isHost ? '내 챌린지' : joinable ? '참여 신청하기' : '모집 마감'}
           </Button>
         </div>
       </Modal>

@@ -18,6 +18,7 @@ const LEFT_TABS: Tab[] = [
 ];
 
 const RIGHT_TABS: Tab[] = [
+  { href: '/reels', label: '릴스', icon: '🎥' },
   { href: '/me', label: '마이', icon: '👤' },
 ];
 

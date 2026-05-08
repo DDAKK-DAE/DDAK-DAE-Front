@@ -60,7 +60,10 @@ export function CreateChallengePage() {
   const videoObjectUrl = form.videoFile ? URL.createObjectURL(form.videoFile) : null;
 
   const canGenerateAi =
-    form.title.trim().length > 0 && form.locationText.trim().length > 0 && !isGeneratingAi;
+    form.title.trim().length > 0 &&
+    form.locationText.trim().length > 0 &&
+    form.category !== '' &&
+    !isGeneratingAi;
 
   return (
     <AppShell className="bg-background">
@@ -260,24 +263,43 @@ export function CreateChallengePage() {
           <p className="text-center text-xs text-subtle">최소 2명 · 최대 6명</p>
         </section>
 
-        {/* 설명 + AI 자동작성 */}
+        {/* AI 자동작성 카드 */}
+        <section>
+          <button
+            onClick={() => void generateAiDescription()}
+            disabled={!canGenerateAi || isGeneratingAi}
+            className={cn(
+              'w-full flex items-center gap-3 rounded-2xl border p-4 text-left transition-all',
+              canGenerateAi && !isGeneratingAi
+                ? 'border-primary/40 bg-primary/5 hover:bg-primary/10 active:scale-[0.98]'
+                : 'border-border bg-surface cursor-not-allowed',
+            )}
+          >
+            <div className={cn(
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+              canGenerateAi ? 'bg-primary/20' : 'bg-surface border border-border',
+            )}>
+              <Sparkles className={cn('h-5 w-5', canGenerateAi ? 'text-primary' : 'text-subtle')} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={cn('text-sm font-semibold', canGenerateAi ? 'text-foreground' : 'text-muted')}>
+                {isGeneratingAi ? 'AI가 글을 작성 중이에요...' : 'AI 소개글 자동작성'}
+              </p>
+              <p className="text-xs text-muted mt-0.5">
+                {canGenerateAi
+                  ? '제목 · 장소 · 카테고리로 모집글 + 해시태그를 생성해요'
+                  : '제목 · 장소 · 카테고리를 먼저 입력해주세요'}
+              </p>
+            </div>
+            {isGeneratingAi && (
+              <div className="h-5 w-5 shrink-0 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+            )}
+          </button>
+        </section>
+
+        {/* 설명 */}
         <section className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-foreground">소개 (선택)</label>
-            <button
-              onClick={() => void generateAiDescription()}
-              disabled={!canGenerateAi}
-              className={cn(
-                'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition-all',
-                canGenerateAi
-                  ? 'border-primary/50 text-primary hover:bg-primary/10'
-                  : 'border-border text-subtle opacity-40 cursor-not-allowed',
-              )}
-            >
-              <Sparkles className="h-3 w-3" />
-              {isGeneratingAi ? 'AI 작성 중...' : 'AI 자동작성'}
-            </button>
-          </div>
+          <label className="text-sm font-semibold text-foreground">소개 (선택)</label>
           <textarea
             value={form.description}
             onChange={(e) => updateField('description', e.target.value)}

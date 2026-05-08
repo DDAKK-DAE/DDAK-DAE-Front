@@ -1,10 +1,16 @@
 import { aiApiClient } from '../client';
-import type { ApiResponse } from '@/shared/types/api';
+
+// ── generate-description ─────────────────────────────────────────────────────
 
 export interface GenerateChallengeDescriptionRequest {
   title: string;
   locationText: string;
   maxParticipants: number;
+  category: string;
+  descriptionHint?: string;
+  mood?: string;
+  targetAudience?: string;
+  difficulty?: string;
 }
 
 export interface GenerateChallengeDescriptionResponse {
@@ -12,14 +18,68 @@ export interface GenerateChallengeDescriptionResponse {
   hashtags: string[];
 }
 
+/** POST /ai/generate-description */
+export async function generateChallengeDescriptionApi(
+  request: GenerateChallengeDescriptionRequest,
+): Promise<GenerateChallengeDescriptionResponse> {
+  const { data } = await aiApiClient.post<GenerateChallengeDescriptionResponse>(
+    '/ai/generate-description',
+    request,
+  );
+  return data;
+}
+
+// ── chemistry ────────────────────────────────────────────────────────────────
+
+export interface ParticipationHistoryItem {
+  category: string;
+  title: string;
+}
+
+export interface ChemistryMember {
+  nickname: string;
+  bio?: string;
+  participationHistory: ParticipationHistoryItem[];
+}
+
 export interface AnalyzeGroupChemistryRequest {
-  challengeId: string;
-  acceptedUserIds: string[];
-  candidateUserId: string;
+  challengeTitle: string;
+  currentMembers: ChemistryMember[];
+  applicant: ChemistryMember & { introMessage?: string };
 }
 
 export interface AnalyzeGroupChemistryResponse {
-  analysis: string;
+  score: number;
+  summary: string;
+  comment: string;
+}
+
+/** POST /ai/chemistry */
+export async function analyzeGroupChemistryApi(
+  request: AnalyzeGroupChemistryRequest,
+): Promise<AnalyzeGroupChemistryResponse> {
+  const { data } = await aiApiClient.post<AnalyzeGroupChemistryResponse>(
+    '/ai/chemistry',
+    request,
+  );
+  return data;
+}
+
+// ── crew-recommendation ──────────────────────────────────────────────────────
+
+export interface TrendingChallengeItem {
+  id: string;
+  title: string;
+  category: string;
+  locationText: string;
+  currentParticipants: number;
+  maxParticipants: number;
+}
+
+export interface GetCrewRecommendationsRequest {
+  crewId: string;
+  crewHistory: ParticipationHistoryItem[];
+  trendingChallenges: TrendingChallengeItem[];
 }
 
 export interface CrewRecommendation {
@@ -32,40 +92,13 @@ export interface GetCrewRecommendationsResponse {
   recommendations: CrewRecommendation[];
 }
 
-/** POST /ai/challenge-description */
-export async function generateChallengeDescriptionApi(
-  request: GenerateChallengeDescriptionRequest,
-): Promise<GenerateChallengeDescriptionResponse> {
-  const response = await aiApiClient.post<ApiResponse<GenerateChallengeDescriptionResponse>>(
-    '/ai/challenge-description',
-    request,
-  );
-  const result = response.data;
-  if (!result.success) throw new Error(result.message);
-  return result.data;
-}
-
-/** POST /ai/group-chemistry */
-export async function analyzeGroupChemistryApi(
-  request: AnalyzeGroupChemistryRequest,
-): Promise<AnalyzeGroupChemistryResponse> {
-  const response = await aiApiClient.post<ApiResponse<AnalyzeGroupChemistryResponse>>(
-    '/ai/group-chemistry',
-    request,
-  );
-  const result = response.data;
-  if (!result.success) throw new Error(result.message);
-  return result.data;
-}
-
-/** GET /crews/:id/recommendation */
+/** POST /ai/crew-recommendation */
 export async function getCrewRecommendationsApi(
-  crewId: string,
+  request: GetCrewRecommendationsRequest,
 ): Promise<GetCrewRecommendationsResponse> {
-  const response = await aiApiClient.get<ApiResponse<GetCrewRecommendationsResponse>>(
-    `/crews/${crewId}/recommendation`,
+  const { data } = await aiApiClient.post<GetCrewRecommendationsResponse>(
+    '/ai/crew-recommendation',
+    request,
   );
-  const result = response.data;
-  if (!result.success) throw new Error(result.message);
-  return result.data;
+  return data;
 }

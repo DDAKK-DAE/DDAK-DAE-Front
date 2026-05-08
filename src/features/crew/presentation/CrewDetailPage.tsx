@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Send, Users, Sparkles, Video, Upload } from 'lucide-react';
+import { ArrowLeft, Send, Users, Sparkles, Video, Upload, Film } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { useCrewDetail } from '../application/useCrewDetail';
 import { useCrewChat } from '../application/useCrewChat';
@@ -10,7 +10,7 @@ import { useAuth } from '@/features/auth/application/store/AuthContext';
 import { formatRelativeTime } from '@/shared/utils/formatDate';
 import { cn } from '@/shared/utils/cn';
 
-type Tab = 'chat' | 'members' | 'recommend';
+type Tab = 'chat' | 'members' | 'archive' | 'recommend';
 
 interface CrewDetailPageProps {
   crewId: string;
@@ -83,11 +83,18 @@ export function CrewDetailPage({ crewId }: CrewDetailPageProps) {
         {([
           { key: 'chat', label: '채팅', icon: <Send className="h-3.5 w-3.5" /> },
           { key: 'members', label: '멤버', icon: <Users className="h-3.5 w-3.5" /> },
+          { key: 'archive', label: '완성 릴스', icon: <Film className="h-3.5 w-3.5" /> },
           { key: 'recommend', label: 'AI 추천', icon: <Sparkles className="h-3.5 w-3.5" /> },
         ] as { key: Tab; label: string; icon: React.ReactNode }[]).map(({ key, label, icon }) => (
           <button
             key={key}
-            onClick={() => setActiveTab(key)}
+            onClick={() => {
+              if (key === 'archive') {
+                router.push(`/crews/${crewId}/archive`);
+              } else {
+                setActiveTab(key);
+              }
+            }}
             className={cn(
               'flex flex-1 items-center justify-center gap-1.5 py-3 text-sm font-medium transition-colors',
               activeTab === key
@@ -113,7 +120,7 @@ export function CrewDetailPage({ crewId }: CrewDetailPageProps) {
               </div>
             ) : (
               messages.map((msg) => {
-                const isMe = msg.sender.id === currentUser?.id || msg.sender.nickname === '나';
+                const isMe = msg.sender.userId === currentUser?.id || msg.sender.nickname === '나';
                 return (
                   <div
                     key={msg.id}
@@ -186,11 +193,6 @@ export function CrewDetailPage({ crewId }: CrewDetailPageProps) {
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground">{member.nickname}</p>
               </div>
-              {member.userId === crew.challenge.host?.id && (
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                  크루장
-                </span>
-              )}
             </div>
           ))}
         </div>
@@ -208,16 +210,17 @@ export function CrewDetailPage({ crewId }: CrewDetailPageProps) {
             </div>
           ) : (
             recommendations.map((rec) => (
-              <div
+              <button
                 key={rec.challengeId}
-                className="rounded-2xl border border-border bg-surface p-4 space-y-2"
+                onClick={() => router.push(`/challenges/${rec.challengeId}`)}
+                className="w-full text-left rounded-2xl border border-border bg-surface p-4 space-y-2 hover:border-primary/40 active:scale-[0.98] transition-all"
               >
                 <div className="flex items-start gap-2">
                   <Video className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <h3 className="font-semibold text-foreground text-sm">{rec.title}</h3>
                 </div>
                 <p className="text-xs text-muted leading-relaxed pl-6">{rec.reason}</p>
-              </div>
+              </button>
             ))
           )}
         </div>

@@ -137,11 +137,12 @@ function ReelItem({
 interface ReelFeedPageProps {
   challengeId: string;
   challengeTitle?: string;
+  type?: 'recruitment' | 'completion';
 }
 
-export function ReelFeedPage({ challengeId, challengeTitle }: ReelFeedPageProps) {
+export function ReelFeedPage({ challengeId, challengeTitle, type }: ReelFeedPageProps) {
   const router = useRouter();
-  const { reels, isLoading } = useReelFeed(challengeId);
+  const { reels, isLoading } = useReelFeed(challengeId, type);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -171,7 +172,7 @@ export function ReelFeedPage({ challengeId, challengeTitle }: ReelFeedPageProps)
   if (reels.length === 0) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-black">
-        <p className="text-white/60 text-sm">아직 릴스가 없어요</p>
+        <p className="text-white/60 text-sm">{type === 'completion' ? '아직 완성 릴스가 없어요' : '아직 릴스가 없어요'}</p>
         <button
           onClick={() => router.back()}
           className="text-primary text-sm font-medium"
@@ -193,7 +194,7 @@ export function ReelFeedPage({ challengeId, challengeTitle }: ReelFeedPageProps)
           <ArrowLeft className="h-5 w-5 text-white" />
         </button>
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-white/60">릴스</p>
+          <p className="text-xs text-white/60">{type === 'completion' ? '완성 릴스' : '릴스'}</p>
           {challengeTitle && (
             <p className="text-sm font-semibold text-white truncate">{challengeTitle}</p>
           )}

@@ -5,7 +5,11 @@ import { useFeed } from '@/features/challenge/application/hooks/useFeed';
 import { CategoryTabs } from './CategoryTabs';
 import { FeedCard } from './FeedCard';
 
-export function FeedPage() {
+interface FeedPageProps {
+  reelType?: 'recruitment' | 'completion';
+}
+
+export function FeedPage({ reelType }: FeedPageProps) {
   const { challenges, activeCategory, setActiveCategory } = useFeed();
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -53,6 +57,7 @@ export function FeedPage() {
               challenge={challenge}
               index={index}
               isActive={index === activeIndex}
+              reelType={reelType}
             />
           ))
         )}

@@ -131,7 +131,7 @@ export function ProfilePage() {
               {myReels.map((reel) => (
                 <Link
                   key={reel.id}
-                  href={`/challenges/${reel.challengeId}/reels`}
+                  href={`/challenges/${reel.challengeId}`}
                   className="flex items-center gap-3 rounded-2xl bg-surface border border-border p-4 hover:border-primary/30 transition-colors active:scale-[0.98]"
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface border border-border">

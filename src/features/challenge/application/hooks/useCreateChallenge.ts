@@ -75,13 +75,14 @@ export function useCreateChallenge() {
     form.videoFile !== null;
 
   const generateAiDescription = useCallback(async () => {
-    if (!form.title.trim() || !form.locationText.trim()) return;
+    if (!form.title.trim() || !form.locationText.trim() || !form.category) return;
     setIsGeneratingAi(true);
     try {
       const result = await generateChallengeDescriptionApi({
         title: form.title.trim(),
         locationText: form.locationText.trim(),
         maxParticipants: form.maxParticipants,
+        category: form.category,
       });
       setForm((prev) => ({
         ...prev,
@@ -98,7 +99,7 @@ export function useCreateChallenge() {
     } finally {
       setIsGeneratingAi(false);
     }
-  }, [form.title, form.locationText, form.maxParticipants]);
+  }, [form.title, form.locationText, form.maxParticipants, form.category]);
 
   const submit = useCallback(async () => {
     if (!isValid || !form.videoFile) return;

@@ -9,6 +9,7 @@ import { Modal } from '@/shared/components/ui/Modal';
 import { useApplicants } from '../../application/hooks/useApplicants';
 import { PARTICIPATION_STATUS } from '../../domain/entities/Challenge';
 import type { ApplicantDetail, ParticipationStatus } from '../../domain/entities/Challenge';
+import type { AnalyzeGroupChemistryResponse } from '@/api/endpoints/ai';
 import { cn } from '@/shared/utils/cn';
 
 type FilterTab = 'all' | ParticipationStatus;
@@ -32,7 +33,7 @@ function ApplicantCard({
   chemistryLoading: string | null;
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
-  onAnalyze: (userId: string) => void;
+  onAnalyze: (applicant: ApplicantDetail) => void;
 }) {
   const { participationId, user, introMessage, status } = applicant;
   const isActing = actionLoading === participationId;
@@ -46,7 +47,6 @@ function ApplicantCard({
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-foreground text-sm truncate">{user.nickname}</p>
-          {user.job && <p className="text-xs text-muted mt-0.5">{user.job}</p>}
         </div>
 
         {status !== PARTICIPATION_STATUS.PENDING && (
@@ -77,7 +77,7 @@ function ApplicantCard({
       {status === PARTICIPATION_STATUS.PENDING && (
         <div className="flex gap-2 pt-1">
           <button
-            onClick={() => onAnalyze(user.id)}
+            onClick={() => onAnalyze(applicant)}
             disabled={isAnalyzing}
             className="flex items-center gap-1 rounded-xl border border-border px-2.5 py-2 text-xs text-muted hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50 shrink-0"
           >
@@ -111,6 +111,43 @@ function ApplicantCard({
   );
 }
 
+function ScoreRing({ score }: { score: number }) {
+  const color =
+    score >= 80 ? 'text-primary' : score >= 60 ? 'text-[#f5a318]' : 'text-muted';
+  return (
+    <div className={cn('text-5xl font-bold tabular-nums', color)}>
+      {score}
+      <span className="text-lg font-medium text-muted">/100</span>
+    </div>
+  );
+}
+
+function ChemistryResultContent({
+  result,
+  onClose,
+}: {
+  result: AnalyzeGroupChemistryResponse;
+  onClose: () => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col items-center gap-2 py-2">
+        <ScoreRing score={result.score} />
+        <p className="text-sm font-semibold text-foreground text-center">{result.summary}</p>
+      </div>
+      <div className="rounded-2xl bg-primary/5 border border-primary/20 p-4">
+        <div className="flex items-start gap-2">
+          <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <p className="text-sm text-foreground leading-relaxed">{result.comment}</p>
+        </div>
+      </div>
+      <Button className="w-full" onClick={onClose}>
+        확인
+      </Button>
+    </div>
+  );
+}
+
 interface ApplicantsPageProps {
   challengeId: string;
   challengeTitle?: string;
@@ -130,6 +167,7 @@ export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPagePr
     acceptedCount,
     analyzeChemistry,
     chemistryLoading,
+    chemistryAnalyzing,
     chemistryResult,
     clearChemistryResult,
   } = useApplicants(challengeId);
@@ -239,24 +277,26 @@ export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPagePr
         )}
       </div>
 
-      {/* AI 케미 분석 결과 모달 */}
+      {/* AI 케미 분석 모달 (로딩 중에도 열려 있음) */}
       <Modal
-        isOpen={!!chemistryResult}
-        onClose={clearChemistryResult}
+        isOpen={!!chemistryAnalyzing || !!chemistryResult}
+        onClose={() => {
+          if (chemistryAnalyzing) return;
+          clearChemistryResult();
+        }}
         title="AI 케미 분석"
       >
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary shrink-0" />
-            <p className="text-sm text-muted">그룹 케미 분석 결과예요</p>
+        {chemistryAnalyzing && !chemistryResult ? (
+          <div className="flex flex-col items-center gap-3 py-8">
+            <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+            <p className="text-sm text-muted text-center">
+              <span className="text-foreground font-semibold">{chemistryAnalyzing.nickname}</span>
+              님과의 케미를 분석 중이에요...
+            </p>
           </div>
-          <div className="rounded-2xl bg-primary/5 border border-primary/20 p-4">
-            <p className="text-sm text-foreground leading-relaxed">{chemistryResult}</p>
-          </div>
-          <Button className="w-full" onClick={clearChemistryResult}>
-            확인
-          </Button>
-        </div>
+        ) : chemistryResult ? (
+          <ChemistryResultContent result={chemistryResult} onClose={clearChemistryResult} />
+        ) : null}
       </Modal>
 
       {/* 모집 마감 확인 모달 */}
