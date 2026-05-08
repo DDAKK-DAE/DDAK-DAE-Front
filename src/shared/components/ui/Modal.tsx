@@ -30,14 +30,10 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
       aria-modal="true"
       role="dialog"
     >
-      <div
-        className="absolute inset-0 bg-black/60"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
       <div
         className={cn(
-          'relative w-full max-w-lg rounded-t-3xl bg-surface p-6 sm:rounded-3xl',
+          'relative w-full max-w-lg rounded-t-3xl bg-surface border border-border p-6 sm:rounded-3xl',
           'animate-slide-up sm:animate-scale-in',
           className,
         )}
@@ -47,7 +43,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
         )}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-text-muted hover:text-foreground"
+          className="absolute right-4 top-4 text-muted hover:text-foreground transition-colors"
           aria-label="닫기"
         >
           ✕

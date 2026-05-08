@@ -12,9 +12,9 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { href: '/', label: '피드', icon: '🎬' },
+  { href: '/',      label: '피드', icon: '🎬' },
   { href: '/crews', label: '크루', icon: '👥' },
-  { href: '/me', label: '마이', icon: '👤' },
+  { href: '/me',    label: '마이', icon: '👤' },
 ];
 
 export function BottomTabBar() {
@@ -33,7 +33,7 @@ export function BottomTabBar() {
             href={href}
             className={cn(
               'flex flex-1 flex-col items-center gap-0.5 py-3 text-xs transition-colors',
-              isActive ? 'text-primary' : 'text-text-muted',
+              isActive ? 'text-primary' : 'text-muted',
             )}
           >
             <span className="text-xl leading-none">{icon}</span>

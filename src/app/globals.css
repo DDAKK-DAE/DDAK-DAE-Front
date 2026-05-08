@@ -2,55 +2,63 @@
 
 /* ============================================================
    디자인 토큰 — Tailwind v4 @theme
-   색·폰트·breakpoint·애니메이션만 정의. 공통 속성 설정 지양.
-   스타일 가이드 Section 6 (Utility-first) 준수.
+   메인 컬러 #05a66b 기반 팔레트. 순수 흰/검 사용 배제 (Light Theme)
+   보색(H=338°): #e8356e / 삼색(H=38°): #f5a318
    ============================================================ */
 @theme {
-  /* 배경 */
-  --color-background: #0d0d0d;
-  --color-surface:    #1a1a1a;
-  --color-secondary:  #2a2a2a;
+  /* ─── Backgrounds ──────────────────────────────────── */
+  --color-background: #f5f8f6;   /* 오프화이트 베이스 */
+  --color-surface:    #fdfdfc;   /* 카드 / 패널 (완전 흰색 아님) */
+  --color-elevated:   #ffffff;   /* 입력창 등 (가장 밝은 영역, #fdfdfc와 차이를 두기 위해 굳이 쓴다면 쓰지만 오프화이트 지향) */
+  --color-secondary:  #e8f0ec;   /* 보조 영역 bg */
 
-  /* 텍스트 */
-  --color-foreground:   #ffffff;
-  --color-text-muted:   #aaaaaa;
+  /* ─── Text ─────────────────────────────────────────── */
+  --color-foreground: #1c2420;   /* 기본 텍스트 (완전 검정 아님) */
+  --color-muted:      #5c7065;   /* 흐린 텍스트 */
+  --color-subtle:     #8a9e93;   /* 매우 흐린 텍스트 */
 
-  /* Primary — 틱톡 감성 핑크/레드 */
-  --color-primary:      #f02d5e;
-  --color-primary-glow: rgba(240, 45, 94, 0.4);
-  --color-primary-dark: #c4234d;
+  /* ─── Primary  #05a66b ─────────────────────────────── */
+  --color-primary:       #05a66b;
+  --color-primary-light: #07d98a;
+  --color-primary-dark:  #048055;
 
-  /* 보더 */
-  --color-border: rgba(255, 255, 255, 0.08);
+  /* ─── Accent — 보색 H=338° 핫핑크 (애니메이션용) ────── */
+  --color-accent: #e8356e;
 
-  /* 상태 */
-  --color-error:   #ff4d4d;
-  --color-success: #4dff91;
-  --color-warning: #ffb830;
+  /* ─── Border ───────────────────────────────────────── */
+  --color-border: rgba(5, 166, 107, 0.12);
 
-  /* 폰트 */
+  /* ─── Status ───────────────────────────────────────── */
+  --color-error:   #e8356e;   /* = accent */
+  --color-success: #07d98a;   /* = primary-light */
+  --color-warning: #f5a318;   /* 삼색 H=38° */
+
+  /* ─── Font ─────────────────────────────────────────── */
   --font-sans: var(--font-noto-sans-kr), var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 
-  /* Breakpoints (모바일 우선) */
+  /* ─── Breakpoints (모바일 우선) ────────────────────── */
   --breakpoint-sm: 375px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
 
-  /* Keyframe 애니메이션 */
-  --animate-fade-in:  fade-in 0.2s ease-out;
-  --animate-slide-up: slide-up 0.3s ease-out;
-  --animate-scale-in: scale-in 0.2s ease-out;
-  --animate-shimmer:  shimmer 1.5s infinite linear;
+  /* ─── Animations ───────────────────────────────────── */
+  --animate-fade-in:  fade-in 0.4s ease-out both;
+  --animate-slide-up: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-scale-in: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-shimmer:  shimmer 2s infinite linear;
+  --animate-shake:    shake 0.45s ease-out;
+  --animate-gradient-xy: gradient-xy 15s ease infinite;
+  --animate-float: float 6s ease-in-out infinite;
 
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   @keyframes slide-up {
-    from { transform: translateY(100%); }
-    to   { transform: translateY(0); }
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
   @keyframes scale-in {
     from { opacity: 0; transform: scale(0.95); }
@@ -60,11 +68,25 @@
     from { background-position: -200% 0; }
     to   { background-position:  200% 0; }
   }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-7px); }
+    40%      { transform: translateX(7px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+  @keyframes gradient-xy {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
 }
 
 /* ============================================================
-   Safe-area 토큰 (모바일 노치 대응 — CSS env() 변수)
-   @theme에서 env()를 직접 참조할 수 없어 :root에 별도 선언.
+   Safe-area (모바일 노치 대응)
    ============================================================ */
 :root {
   --safe-area-top:    env(safe-area-inset-top, 0px);
@@ -72,9 +94,11 @@
 }
 
 /* ============================================================
-   body 배경 — 피드 앱 특성상 다크 배경을 전역 1회 설정.
+   전역 스타일 (가이드에 따라 최소화)
    ============================================================ */
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
+  overflow-x: hidden;
 }
+
