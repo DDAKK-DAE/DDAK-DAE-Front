@@ -15,7 +15,8 @@
   /* ─── Text ─────────────────────────────────────────── */
   --color-foreground: #1c2420;   /* 기본 텍스트 (완전 검정 아님) */
   --color-muted:      #5c7065;   /* 흐린 텍스트 */
-  --color-subtle:     #8a9e93;   /* 매우 흐린 텍스트 */
+  --color-subtle:     #8a9e93;
+  --color-text-muted: #5c7065;
 
   /* ─── Primary  #05a66b ─────────────────────────────── */
   --color-primary:       #05a66b;
@@ -100,5 +101,14 @@ body {
   background-color: var(--color-background);
   color: var(--color-foreground);
   overflow-x: hidden;
+}
+
+/* 스크롤바 숨김 유틸 (snap feed 등) */
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
 }
 
