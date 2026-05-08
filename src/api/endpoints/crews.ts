@@ -39,9 +39,9 @@ export async function getCrewArchiveApi(crewId: string): Promise<CrewDetail['arc
   return response.data.data;
 }
 
-/** GET /me/crews — 내가 속한 크루 목록 조회 */
+/** GET /crews/me — 내가 속한 크루 목록 조회 */
 export async function getMyCrewsApi(): Promise<CrewSummary[]> {
-  const response = await apiClient.get<ApiResponse<CrewSummary[]>>('/me/crews');
+  const response = await apiClient.get<ApiResponse<CrewSummary[]>>('/crews/me');
   return response.data.data;
 }
 

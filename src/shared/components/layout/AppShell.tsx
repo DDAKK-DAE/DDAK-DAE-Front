@@ -15,7 +15,7 @@ interface AppShellProps {
 export function AppShell({ children, className }: AppShellProps) {
   return (
     <main
-      className={cn('relative flex h-dvh w-full flex-col bg-background', className)}
+      className={cn('relative flex h-full w-full flex-col bg-background', className)}
       style={{
         paddingTop: 'var(--safe-area-top)',
         paddingBottom: 'var(--safe-area-bottom)',

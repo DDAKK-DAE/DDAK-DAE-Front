@@ -32,7 +32,7 @@ export interface CrewMessage {
   created_at: string; // ISO datetime
 }
 
-/** 내 크루 목록 아이템 (GET /me/crews 응답) */
+/** 내 크루 목록 아이템 (GET /crews/me 응답) */
 export interface CrewSummary {
   crew_id: string;
   challenge_title: string;

@@ -3,12 +3,17 @@
 // Request Interceptor: JWT 자동 주입
 // Response Interceptor: 401 자동 로그아웃
 
-import axios, { type AxiosInstance } from 'axios';
+import axios, {
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
+  type AxiosResponse,
+  type AxiosError,
+} from 'axios';
 
 // Spring Boot 메인 API 서버
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  timeout: 10000,
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080',
+  timeout: 3000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -16,8 +21,8 @@ export const apiClient: AxiosInstance = axios.create({
 
 // FastAPI AI 서버 (별도 baseURL — api_spec.md AI 섹션)
 export const aiApiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_AI_API_BASE_URL,
-  timeout: 30000, // AI 요청은 응답이 느릴 수 있음
+  baseURL: process.env.NEXT_PUBLIC_AI_API_BASE_URL ?? 'http://localhost:8000',
+  timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,7 +34,7 @@ export const aiApiClient: AxiosInstance = axios.create({
 // ==========================================
 function applyRequestInterceptor(client: AxiosInstance): void {
   client.interceptors.request.use(
-    (config) => {
+    (config: InternalAxiosRequestConfig) => {
       // localStorage는 클라이언트 사이드에서만 접근 가능
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem('accessToken');
@@ -39,7 +44,7 @@ function applyRequestInterceptor(client: AxiosInstance): void {
       }
       return config;
     },
-    (error) => Promise.reject(error),
+    (error: AxiosError) => Promise.reject(error),
   );
 }
 
@@ -49,8 +54,8 @@ function applyRequestInterceptor(client: AxiosInstance): void {
 // ==========================================
 function applyResponseInterceptor(client: AxiosInstance): void {
   client.interceptors.response.use(
-    (response) => response,
-    (error) => {
+    (response: AxiosResponse) => response,
+    (error: AxiosError) => {
       if (
         error.response?.status === 401 &&
         typeof window !== 'undefined' &&

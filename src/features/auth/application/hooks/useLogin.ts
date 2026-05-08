@@ -33,8 +33,8 @@ export function useLogin() {
     } catch (err) {
       const apiError =
         err &&
-        typeof err === 'object' &&
-        'response' in err
+          typeof err === 'object' &&
+          'response' in err
           ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
           : undefined;
       setError(apiError ?? '이메일 또는 비밀번호를 확인해주세요.');

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { ChevronRight, Clock, Heart, MapPin, Play, Share2, Users } from 'lucide-react';
 
@@ -49,6 +50,7 @@ interface FeedCardProps {
 }
 
 export function FeedCard({ challenge, index }: FeedCardProps) {
+  const router = useRouter();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(() => deterministicCount(challenge.id, 50));
   const [showDetail, setShowDetail] = useState(false);
@@ -274,7 +276,15 @@ export function FeedCard({ challenge, index }: FeedCardProps) {
             </div>
           )}
 
-          <Button className="w-full" disabled={!joinable} size="lg">
+          <Button
+            className="w-full"
+            size="lg"
+            disabled={!joinable}
+            onClick={() => {
+              setShowDetail(false);
+              router.push(`/challenges/${challenge.id}`);
+            }}
+          >
             {joinable ? '참여 신청하기' : '모집 마감'}
           </Button>
         </div>
