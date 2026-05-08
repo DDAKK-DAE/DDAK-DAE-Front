@@ -58,18 +58,18 @@ export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
   return (
     <AppShell className="bg-background">
       {/* Header */}
-      <header className="flex items-center gap-3 border-b border-border bg-background/80 px-4 py-4 backdrop-blur-md">
+      <header className="flex items-center gap-3 bg-gradient-to-b from-[#c0ddb8] to-[#a8cc9e] px-5 pt-4 pb-5 shadow-[0_2px_10px_rgba(6,83,11,0.1)]">
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-surface transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/30 active:bg-white/50 transition-colors"
         >
-          <ArrowLeft className="h-5 w-5 text-foreground" />
+          <ArrowLeft className="h-5 w-5 text-primary" />
         </button>
-        <h1 className="flex-1 truncate font-bold text-foreground">챌린지 상세</h1>
+        <h1 className="flex-1 truncate font-bold text-foreground tracking-tight">챌린지 상세</h1>
         {isHost && (
           <button
             onClick={() => router.push(`/challenges/${challengeId}/applicants`)}
-            className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs text-foreground hover:bg-surface transition-colors"
+            className="flex items-center gap-1.5 rounded-full bg-white/30 border border-white/40 px-3 py-1.5 text-xs font-medium text-primary hover:bg-white/50 transition-colors"
           >
             <ClipboardList className="h-4 w-4 text-primary" />
             신청자 보기
@@ -77,7 +77,7 @@ export function ChallengeDetailPage({ challengeId }: ChallengeDetailPageProps) {
         )}
       </header>
 
-      <div className="flex-1 overflow-y-auto pb-32">
+      <div className="flex-1 overflow-y-auto pb-32 pt-3">
         {/* Reel preview area */}
         <button
           onClick={() => router.push(`/challenges/${challengeId}/reels`)}

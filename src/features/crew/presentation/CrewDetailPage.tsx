@@ -58,20 +58,20 @@ export function CrewDetailPage({ crewId }: CrewDetailPageProps) {
   return (
     <AppShell className="bg-background">
       {/* Header */}
-      <header className="flex items-center gap-3 border-b border-border bg-background/80 px-4 py-4 backdrop-blur-md">
+      <header className="flex items-center gap-3 bg-gradient-to-b from-[#c0ddb8] to-[#a8cc9e] px-5 pt-4 pb-5 shadow-[0_2px_10px_rgba(6,83,11,0.1)]">
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-surface transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/30 active:bg-white/50 transition-colors"
         >
-          <ArrowLeft className="h-5 w-5 text-foreground" />
+          <ArrowLeft className="h-5 w-5 text-primary" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="truncate font-bold text-foreground">{crew.challenge.title}</h1>
+          <h1 className="truncate font-bold text-foreground tracking-tight">{crew.challenge.title}</h1>
           <p className="text-xs text-muted">{crew.members.length}명의 크루원</p>
         </div>
         <button
           onClick={() => router.push(`/challenges/${crew.challenge.id}/upload`)}
-          className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-surface hover:border-primary/40 hover:text-primary transition-colors"
+          className="flex items-center gap-1.5 rounded-full bg-white/30 border border-white/40 px-3 py-1.5 text-xs font-medium text-primary hover:bg-white/50 transition-colors"
         >
           <Upload className="h-3.5 w-3.5" />
           릴스 올리기

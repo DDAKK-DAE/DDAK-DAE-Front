@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Video, CheckCircle2, AlertCircle } from 'lucide-react';
 import { AppShell } from '@/shared/components/layout/AppShell';
 import { Button } from '@/shared/components/ui/Button';
-import { Select } from '@/shared/components/ui/Select';
 import { useUploadReel } from '../application/useUploadReel';
-import { useMyCrews } from '@/features/crew/application/useMyCrews';
 import { cn } from '@/shared/utils/cn';
 
 const REEL_TYPE_OPTIONS = [
@@ -33,14 +31,10 @@ interface UploadReelPageProps {
 export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPageProps) {
   const router = useRouter();
   const { upload, isUploading, uploadedReel, error } = useUploadReel();
-  const { crews } = useMyCrews();
 
   const [videoUrl, setVideoUrl] = useState('');
   const [reelType, setReelType] = useState<'recruitment' | 'completion'>('recruitment');
-  const [selectedCrewId, setSelectedCrewId] = useState<string>('');
   const [urlError, setUrlError] = useState<string | null>(null);
-
-  const isCompletionType = reelType === 'completion';
 
   const validateUrl = (url: string) => {
     if (!url.trim()) {
@@ -59,11 +53,9 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
 
   const handleSubmit = async () => {
     if (!validateUrl(videoUrl)) return;
-    if (isCompletionType && !selectedCrewId) return;
 
     await upload({
       challengeId,
-      crewId: isCompletionType ? selectedCrewId : undefined,
       videoUrl: videoUrl.trim(),
       type: reelType,
     });
@@ -105,22 +97,22 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
   return (
     <AppShell className="bg-background">
       {/* 헤더 */}
-      <header className="flex items-center gap-3 border-b border-border bg-background/80 px-4 py-4 backdrop-blur-md shrink-0">
+      <header className="flex items-center gap-3 bg-gradient-to-b from-[#c0ddb8] to-[#a8cc9e] px-5 pt-4 pb-5 shadow-[0_2px_10px_rgba(6,83,11,0.1)] shrink-0">
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-surface transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/30 active:bg-white/50 transition-colors"
         >
-          <ArrowLeft className="h-5 w-5 text-foreground" />
+          <ArrowLeft className="h-5 w-5 text-primary" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-foreground">릴스 올리기</h1>
+          <h1 className="font-bold text-foreground tracking-tight">릴스 올리기</h1>
           {challengeTitle && (
             <p className="text-xs text-muted truncate mt-0.5">{challengeTitle}</p>
           )}
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-32 pt-6 space-y-6">
+      <div className="flex-1 overflow-y-auto px-5 pb-32 pt-8 space-y-6">
 
         {/* 릴스 타입 선택 */}
         <section className="space-y-3">
@@ -145,27 +137,6 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
             ))}
           </div>
         </section>
-
-        {/* 크루 선택 (완료 릴스일 때) */}
-        {isCompletionType && (
-          <section className="space-y-2">
-            <label className="text-sm font-semibold text-foreground">
-              함께한 크루 <span className="text-red-400">*</span>
-            </label>
-            <Select
-              value={selectedCrewId}
-              onChange={setSelectedCrewId}
-              placeholder="크루 선택..."
-              options={crews.map((crew) => ({
-                value: crew.crew_id,
-                label: `${crew.challenge_title} (${crew.member_count}명)`,
-              }))}
-            />
-            {!selectedCrewId && (
-              <p className="text-xs text-muted">완료 릴스는 크루를 선택해야 해요</p>
-            )}
-          </section>
-        )}
 
         {/* 영상 URL 입력 */}
         <section className="space-y-2">
@@ -229,7 +200,7 @@ export function UploadReelPage({ challengeId, challengeTitle }: UploadReelPagePr
           className="w-full"
           size="lg"
           onClick={() => void handleSubmit()}
-          disabled={isUploading || !videoUrl || (isCompletionType && !selectedCrewId)}
+          disabled={isUploading || !videoUrl}
         >
           {isUploading ? '업로드 중...' : '릴스 올리기'}
         </Button>

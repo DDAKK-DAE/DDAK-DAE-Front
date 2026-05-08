@@ -13,9 +13,10 @@ export function CrewListPage() {
     return (
         <AppShell className="bg-background">
             {/* Header */}
-            <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-6 py-5">
-                <h1 className="text-2xl font-bold text-foreground">내 크루</h1>
-                <p className="text-sm text-muted mt-1">참여 중인 챌린지 팀원들과 대화해보세요</p>
+            <header className="sticky top-0 z-10 bg-gradient-to-b from-[#c0ddb8] to-[#a8cc9e] px-6 pt-5 pb-6 shadow-[0_2px_10px_rgba(6,83,11,0.1)]">
+                <p className="text-xs font-semibold text-primary/70 tracking-widest uppercase mb-1">My Crews</p>
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">내 크루</h1>
+                <p className="text-sm text-muted mt-0.5">참여 중인 챌린지 팀원들과 대화해보세요</p>
             </header>
 
             {/* Crew List */}

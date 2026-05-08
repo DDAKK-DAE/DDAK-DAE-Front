@@ -41,18 +41,21 @@ export function ProfilePage() {
   return (
     <AppShell className="bg-background">
       {/* 헤더 */}
-      <header className="flex items-center justify-between px-5 py-5 shrink-0">
-        <h1 className="text-xl font-bold text-foreground">마이페이지</h1>
+      <header className="flex items-end justify-between bg-gradient-to-b from-[#c0ddb8] to-[#a8cc9e] px-5 pt-5 pb-6 shrink-0 shadow-[0_2px_10px_rgba(6,83,11,0.1)]">
+        <div>
+          <p className="text-xs font-semibold text-primary/70 tracking-widest uppercase mb-1">Profile</p>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">마이페이지</h1>
+        </div>
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm text-muted hover:bg-surface hover:text-foreground transition-colors"
+          className="flex items-center gap-1.5 rounded-full bg-white/30 border border-white/40 px-3 py-1.5 text-xs font-medium text-primary hover:bg-white/50 transition-colors mb-0.5"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-3.5 w-3.5" />
           로그아웃
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-24 space-y-7">
+      <div className="flex-1 overflow-y-auto px-5 pt-5 pb-24 space-y-7">
 
         {/* 프로필 카드 */}
         <div className="rounded-2xl bg-surface border border-border p-5 flex items-center gap-4">

@@ -28,7 +28,7 @@ export function Input({ label, error, leftIcon, rightElement, className, id, ...
         <input
           id={id}
           className={cn(
-            'h-13 w-full rounded-2xl bg-elevated text-foreground text-base shadow-sm',
+            'h-13 w-full rounded-3xl bg-elevated text-foreground text-base shadow-sm',
             'border border-border placeholder:text-subtle',
             'focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10',
             'transition-all duration-300 ease-out hover:border-primary/50',

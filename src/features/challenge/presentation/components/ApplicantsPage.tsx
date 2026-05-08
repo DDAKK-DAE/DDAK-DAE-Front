@@ -163,15 +163,15 @@ export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPagePr
   return (
     <AppShell className="bg-background">
       {/* 헤더 */}
-      <header className="flex items-center gap-3 border-b border-border bg-background/80 px-4 py-4 backdrop-blur-md shrink-0">
+      <header className="flex items-center gap-3 bg-gradient-to-b from-[#c0ddb8] to-[#a8cc9e] px-5 pt-4 pb-5 shadow-[0_2px_10px_rgba(6,83,11,0.1)] shrink-0">
         <button
           onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-xl hover:bg-surface transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white/30 active:bg-white/50 transition-colors"
         >
-          <ArrowLeft className="h-5 w-5 text-foreground" />
+          <ArrowLeft className="h-5 w-5 text-primary" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-foreground">참여 신청 관리</h1>
+          <h1 className="font-bold text-foreground tracking-tight">참여 신청 관리</h1>
           {challengeTitle && (
             <p className="text-xs text-muted truncate mt-0.5">{challengeTitle}</p>
           )}
@@ -217,7 +217,7 @@ export function ApplicantsPage({ challengeId, challengeTitle }: ApplicantsPagePr
       </div>
 
       {/* 신청자 목록 */}
-      <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-3">
+      <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6 space-y-3">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <Users className="h-12 w-12 text-subtle mb-3" />

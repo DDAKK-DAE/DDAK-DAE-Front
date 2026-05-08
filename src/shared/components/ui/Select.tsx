@@ -38,7 +38,7 @@ export function Select({ value, onChange, options, placeholder = '선택...', cl
         type="button"
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          'flex w-full items-center justify-between rounded-2xl border bg-surface px-4 py-3 text-sm transition-colors',
+          'flex w-full items-center justify-between rounded-3xl border bg-surface px-4 py-3 text-sm transition-colors',
           open ? 'border-primary ring-4 ring-primary/10' : 'border-border hover:border-border/60',
           selected ? 'text-foreground' : 'text-subtle',
         )}
@@ -49,7 +49,7 @@ export function Select({ value, onChange, options, placeholder = '선택...', cl
 
       {open && (
         <div
-          className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl shadow-black/20"
+          className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-3xl border border-border bg-surface shadow-xl shadow-black/20"
         >
           <ul
             className="overflow-y-auto py-1"
